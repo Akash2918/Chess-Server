@@ -1,0 +1,27 @@
+###################################################################################################################################
+
+DATABASE CREATE TABLE QUERIES
+
+###################################################################################################################################
+
+CREATE TABLE Clients (UserID VARCHAR(30) NOT NULL, Email VARCHAR(30) NOT NULL, Username VARCHAR(30) NOT NULL, PASSWD VARCHAR(30) NOT NULL, PRIMARY KEY (UserID));
+
+CREATE TABLE Friends (UserID VARCHAR(30) NOT NULL, FriendID VARCHAR(30) NOT NULL, FOREIGN KEY (UserID) REFERENCES Clients(UserID) ON DELETE CASCADE, FOREIGN KEY (FriendID) REFERENCES Clients(UserID) ON DELETE CASCADE, PRIMARY KEY (UserID, FriendID));
+
+CREATE TABLE Profile (UserID VARCHAR(30) NOT NULL, Profile_Image BLOB, Matches_Played INT, Matches_Won INT, FOREIGN KEY(UserID) REFERENCES Clients(UserID) ON DELETE CASCADE ON UPDATE CASCADE);
+
+create table Games (RoomID varchar(10), Player1 varchar(30), Player2 varchar(30), foreign key (Player1) references Clients(UserID) on delete set default on update cascade, foreign key (Player2) references Clients(UserID) on delete set default on update cascade, primary key (RoomID));
+
+create table History (ID int auto_increment, RoomID varchar(10), Move_Logs BLOB, foreign key(RoomID) references Games(RoomID) on delete set default, primary key (ID));
+
+###################################################################################################################################
+
+INSERT QUERIES
+
+###################################################################################################################################
+
+insert into Clients (UserID, Email, Username, PASSWD) values ('Akash2918', 'akash@testemail.com', 'Akash Malavekar', 'Akash@123'), ('Rutvik123', 'rutvik@testmail.com', 'Rutvik Moharil', 'Rutvik@123'), ('Hrishikesh', 'hrishi@testmail.com', 'Hrishikesh Padale', 'Hrishi@123');
+
+insert into Friends (UserID, FriendID) values ('Akash2918', 'Hrishikesh'), ('Akash2918', 'Rutvik123'), ('Hrishikesh', 'Rutvik123');
+
+
