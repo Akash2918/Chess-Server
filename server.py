@@ -2,13 +2,15 @@ import socket
 import threading
 from database import Database
 import pickle
+from User import Client
 
 THREADS = []
 CLOSE = False
 PORT = 12000
 IP = ''
 DB = Database()
-
+Users = []
+Rooms = []
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind((IP, PORT))
@@ -17,23 +19,38 @@ sock.listen(20)
 def handle_client(conn, ):
     rec = conn.recv(1024).decode()
     data =  pickle.loads(rec)
-    userid, password = data['userid'], data['password']
-    if DB.validate_user(username, password):
-        data = {
-            'ID': 500,
-            'Message' : 'Login successfull'
-        }
-        data = pickle.dumps(data)
-        conn.send(data)
-        #Starting client
+    id = data['ID']
+    userid, password = data['UserID'], data['Password']
+    if id == 5:
+        if DB.validate_user(username, password):
+            data = {
+                'ID': 500,
+                'Message' : 'Login successfull'
+            }
+            data = pickle.dumps(data)
+            conn.send(data)
+            #Starting client
+            
+            c = Client(UserID=userid, conn=conn, database=DB, users=Users, rooms=Rooms)
+            Users.append({'UserID':userid, 'conn': conn, 'client': c})
+            c.start()
+        else:
+            data = {
+                'ID' : 501,
+                'Message' : 'Invalid credentials'
+            }
+            data = pickle.dumps(data)
+            conn.send(data)
+            return
     else:
         data = {
-            'ID' : 501,
-            'Message' : 'Wrong credentials'
+            'ID': 7,
+            'Message': 'Invalid ID Used for sending message'
         }
         data = pickle.dumps(data)
         conn.send(data)
         return
+    return
 
 def Register_Client(conn, ):
     Exit = False

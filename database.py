@@ -29,6 +29,9 @@ class Database(object):
         self._validate_user_query = ("select * from Clients where UserID = %s and PASSWD = %s")
         self._add_new_user_query = ("insert into Clients (UserID, Email, Username, PASSWD) values (%s, %s, %s, %s)")
         self._unique_email_query = ("select * from Clients where Email = %s")
+        self._get_friends_list_query = ("select FriendID from Friends where UserID = %s")
+        self._get_friends_list2_query = ("select UserID from Friends where FriendID = %s")
+
 
     def validate_user(self, userid, password):
         self._uid, self._password = userid, password
@@ -51,8 +54,25 @@ class Database(object):
         else:
             return False
 
+    def get_friends_list(self, uid):
+        self._uid = uid
+        self.cursor.execute(self._get_friends_list_query, (self._uid, ))
+        data = []
+        for friend in self.cursor:
+            data.append(friend[0])
+        self.cursor.execute(self._get_friends_list2_query, (self._uid, ))
+        for friend in self.cursor:
+            data.append(friend[0])
+        return data
 
+    def get_friends_request_list(self, uid):
+        pass
 
+    def get_profile(self, uid):
+        pass
+    
+    def get_friends_rejected_list(self, uid):
+        pass
 
 
 # query = ("select * from Clients")
