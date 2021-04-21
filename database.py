@@ -85,7 +85,7 @@ class Database(object):
 
     def verify_user(self, uid):
         try:
-            self.cursor.execute(self._verify_user_query, (uid, "Verified", ))
+            self.cursor.execute(self._verify_user_query, ("Verified", uid, ))
             mydb.commit()
             return True
         except:

@@ -22,7 +22,7 @@ sock.listen(20)
 
 def random_number():
     num = random.randint(100000, 999999)
-    return num
+    return str(num)
 
 
 def Send_VerificationCode(to, uid, code):
@@ -153,7 +153,8 @@ def handle_client(conn, ):
 def Register_Client(conn, ):
     Exit = False
     Variefy = False
-    while not Exit and not Variefy:
+    while not Variefy:
+        print("Inside the loop register")
         rev = conn.recv(1024)
         data = pickle.loads(rev)
         id = data['ID']
@@ -163,29 +164,29 @@ def Register_Client(conn, ):
             email = data['Email']
             passwd = data['Password']
             ####Add these fields to Clients table
-            try:
-                if (DB.Add_new_User(uid, email, Password= passwd)):
-                    code = random_number()
-                    data = {
-                        'ID': 1000,
-                        'Message': 'Successful but not varified',
-                        #'Code' : code,
-                    }
-                    #    continue
-                    # Send email to the client for verification with code
-                    Send_VerificationCode(email, uid, code)
-                else:
-                    data = {
-                        'ID' : 1500,
-                        'Message': 'User with given email address is already exist'
-                    }
-            except:
-                print("Error while Creating new user with username {}".format(uname))
+            #try:
+            if (DB.Add_new_User(uid, email, Password= passwd)):
+                code = random_number()
                 data = {
-                    'ID' : 2000,
-                    'Message' : 'Registration Unsuccessfull'
+                    'ID': 1000,
+                    'Message': 'Successful but not varified',
+                    #'Code' : code,
                 }
-                # data = pickle.dumps(data)
+                #    continue
+                # Send email to the client for verification with code
+                Send_VerificationCode(email, uid, code)
+            else:
+                data = {
+                    'ID' : 1500,
+                    'Message': 'User with given email address is already exist'
+                }
+            # except:
+            #     print("Error while Creating new user with username {}".format(uid))
+            #     data = {
+            #         'ID' : 2000,
+            #         'Message' : 'Registration Unsuccessfull'
+            #     }
+            #     # data = pickle.dumps(data)
                 # conn.send(data)
                 #continue
             ####After success send the message of confermation
@@ -195,8 +196,10 @@ def Register_Client(conn, ):
             Exit = True
         elif id == 2:
             revcode = data['Code']
+            print("Recieved code is {}".format(revcode))
             if revcode == code:
                 Variefy = True
+                DB.verify_user(uid=uid)
                 data = {
                     'ID': 2,
                     'Message': 'Successful and varified',
@@ -213,6 +216,7 @@ def Register_Client(conn, ):
             conn.send(data)
         else:
             continue
+    print("Completed")
     return
 
 print("Server is running on port {}".format(PORT))
