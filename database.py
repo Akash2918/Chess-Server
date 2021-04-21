@@ -27,11 +27,98 @@ class Database(object):
         
         ####### Database Queries
         self._validate_user_query = ("select * from Clients where UserID = %s and PASSWD = %s")
-        self._add_new_user_query = ("insert into Clients (UserID, Email, Username, PASSWD) values (%s, %s, %s, %s)")
+        self._add_new_user_query = ("insert into Clients (UserID, Email, PASSWD, STATUS) values (%s, %s, %s, %s)")
+        self._verify_user_query = ("update Clients set STATUS = %s where UserID = %s")
         self._unique_email_query = ("select * from Clients where Email = %s")
-        self._get_friends_list_query = ("select FriendID from Friends where UserID = %s")
-        self._get_friends_list2_query = ("select UserID from Friends where FriendID = %s")
+        self._get_friends_list_query = ("select FriendID from Friends where UserID = %s and STATUS = 'Accepted'")
+        self._get_friends_list2_query = ("select UserID from Friends where FriendID = %s and STATUS = 'Accepted'")
+        self._add_new_friend_request_query = ("insert into Friends (UserID, FriendID, STATUS) values (%s, %s, %s)")
+        self._get_user_profile_query = ("select * from Profile where UserID = %s")
+        self._get_friends_rejected_list_query = ("select FriendID from Friends where STATUS = 'Rejected'")
+        self._get_friends_request_list_query = ("select UserID from Friends where STATUS = 'Requested'")
+        self._update_profile_query = ("update Profile set Profile_Image = %s where UserID = %s")
+        self._update_password_query = ("update Clients set PASSWD = %s where UserID = %s")
+        self._existance_email_query = ("select * from Clients where Email = %s")
+        self._existance_roomid_query = ("select RoomID from Games where RoomID = %s")
+        self._insert_roomid_todb_query = ("insert into Games (RoomID, Player1, Player2) values (%s, %s, %s)")
+        self._insert_to_history_query = ("insert into History (RoomID, currentDate, Move_Logs) values (%s, NOW(), %s)")
+        self._update_win_status_query = ("update Profile set Matches_Played = Matches_Played + 1, Matches_Won = Matches_Won + 1 where UserID = %s")
+        self._update_lost_status_query = ("update Profile set Matches_Played = Matches_Played + 1 where UserID = %s")
 
+    def update_user_profile(self, uid, data):
+        try:
+            self.cursor.execute(self._update_profile_query, (data['Image'], uid, ))
+            return True
+        except:
+            return False
+    
+    def update_win_status(self, uid):
+        try:
+            self.cursor.execute(self._update_win_status_query, (uid, ))
+            return True
+        except:
+            print("Error while updating win status")
+            return False
+
+    def update_lost_status(self, uid):
+        try:
+            self.cursor.execute(self._update_lost_status_query, (uid, ))
+            return True
+        except:
+            print("Error while updating lost status")
+            return False
+
+    def verify_user(self, uid):
+        try:
+            self.cursor.execute(self._verify_user_query, (uid, "Verified", ))
+            return True
+        except:
+            print("Error while varifing user")
+            return False
+
+    def update_user_password(self, uid, password):
+        try:
+            self.cursor.execute(self._update_password_query, (password, uid, ))
+            return True
+        except:
+            return False
+        
+    def existance_of_user(self, uid, email):
+        try:
+            self.cursor.execute(self._existance_email_query, (email, ))
+            data = []
+            for d in self.cursor:
+                data.append(d)
+            print(data)
+            qemail = data[0][1]
+            if qemail == email:
+                 return True
+            else:
+                return False
+        except:
+            print("Error while processing email query")
+
+    def existance_of_roomid(self, roomid):
+        self.cursor.execute(self._existance_roomid_query, (roomid, ))
+        data = []
+        for room in self.cursor:
+            data.append(room)
+        return True if len(data) == 0 else False
+
+    def insert_game_details(self, roomid, player1, player2):
+        try:
+            self.cursor.execute(self._insert_roomid_todb_query, (roomid, player1, player2, ))
+            return True
+        except:
+            return False
+        
+    def insert_History_details(self, roomid, move_log):
+        try:
+            self.cursor.execute(self._insert_to_history_query, (roomid, movelog, ))
+            return True
+        except:
+            print("Error while inserting molog to database")
+            return False
 
     def validate_user(self, userid, password):
         self._uid, self._password = userid, password
@@ -42,14 +129,14 @@ class Database(object):
             users.append(data)
         return True if len(users) == 1 else False
     
-    def Add_new_User(self, UserID, Email, Username, Password):
-        self._uid, self._email, self._uname, self._password = UserID, Email, Username, Password
+    def Add_new_User(self, UserID, Email, Password):
+        self._uid, self._email,  self._password = UserID, Email, Password
         self.cursor.execute(self._unique_email_query, (self._email, ))
         data = []
         for email in self.cursor:
             data.append(email)
         if len(data) == 0:
-            self.cursor.execute(self._add_new_user_query, (self._uid, self._email, self._uname, self._password,))
+            self.cursor.execute(self._add_new_user_query, (self._uid, self._email, self._password, "NOT Verified"))
             return True
         else:
             return False
@@ -66,14 +153,40 @@ class Database(object):
         return data
 
     def get_friends_request_list(self, uid):
-        pass
+        try:
+            self.cursor.execute(self._get_friends_request_list_query, (uid, ))
+            friends = []
+            for friend in self.cursor:
+                friends.append(friend)
+            return friends
+        except:
+            print("Error occured while processing friend request query")
+            return []
 
     def get_profile(self, uid):
-        pass
+        profile = []
+        self.cursor.execute(self._get_user_profile_query, (uid, ))
+        for p in self.cursor:
+            profile.append(p)
+
+        print("Profile of {} user is {}".format(uid, profile))
+        return profile
     
     def get_friends_rejected_list(self, uid):
-        pass
+        self.cursor.execute(self._get_friends_rejected_list_query, (uid, ))
+        friends = []
+        for friend in self.cursor:
+            friends.append(friend)
+        print("The friends list is {}".format(friends))
+        return friends
 
+    def add_new_friend_request(self, userid, friendid):
+        try:
+            self.cursor.execute(self._add_new_friend_request_query, (userid, friendid, 'Pending'))
+            return True
+        except:
+            print("Error while inserting data into database")
+            return False
 
 # query = ("select * from Clients")
 # custquery = ("CREATE TABLE customers (name VARCHAR(255), address(255))")
