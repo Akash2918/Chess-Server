@@ -159,7 +159,7 @@ def Register_Client(conn, ):
         id = data['ID']
         if id == 1:
             uid = data['UserID']
-            uname = data['Username']
+            # uname = data['Username']
             email = data['Email']
             passwd = data['Password']
             ####Add these fields to Clients table
