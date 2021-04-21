@@ -17,7 +17,7 @@ Rooms = []
 QUICK_PLAY = []
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.setsocketopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((IP, PORT))
 sock.listen(20)
 
@@ -62,12 +62,12 @@ def Send_Welcome_Email(to, uid):
 def handle_client(conn, ):
     Exit = False
     while not Exit:    
-        rec = conn.recv(1024).decode()
+        rec = conn.recv(1024)
         data =  pickle.loads(rec)
         id = data['ID']
         userid, password = data['UserID'], data['Password']
         if id == 5:
-            if DB.validate_user(username, password):
+            if DB.validate_user(userid, password):
                 data = {
                     'ID': 500,
                     'Message' : 'Login successfull'

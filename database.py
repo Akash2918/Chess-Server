@@ -34,8 +34,8 @@ class Database(object):
         self._get_friends_list2_query = ("select UserID from Friends where FriendID = %s and STATUS = 'Accepted'")
         self._add_new_friend_request_query = ("insert into Friends (UserID, FriendID, STATUS) values (%s, %s, %s)")
         self._get_user_profile_query = ("select * from Profile where UserID = %s")
-        self._get_friends_rejected_list_query = ("select FriendID from Friends where STATUS = 'Rejected'")
-        self._get_friends_request_list_query = ("select UserID from Friends where STATUS = 'Requested'")
+        self._get_friends_rejected_list_query = ("select FriendID from Friends where UserID = %s and STATUS = 'Rejected'")
+        self._get_friends_request_list_query = ("select UserID from Friends where UserID = %s and STATUS = 'Requested'")
         self._update_profile_query = ("update Profile set Profile_Image = %s where UserID = %s")
         self._update_password_query = ("update Clients set PASSWD = %s where UserID = %s")
         self._existance_email_query = ("select * from Clients where Email = %s")
@@ -175,15 +175,15 @@ class Database(object):
         return data
 
     def get_friends_request_list(self, uid):
-        try:
-            self.cursor.execute(self._get_friends_request_list_query, (uid, ))
-            friends = []
-            for friend in self.cursor:
-                friends.append(friend)
-            return friends
-        except:
-            print("Error occured while processing friend request query")
-            return []
+        #try:
+        self.cursor.execute(self._get_friends_request_list_query, (uid, ))
+        friends = []
+        for friend in self.cursor:
+            friends.append(friend)
+        return friends
+        # except:
+        #     print("Error occured while processing friend request query")
+        #     return []
 
     def get_profile(self, uid):
         profile = []
@@ -199,7 +199,7 @@ class Database(object):
         friends = []
         for friend in self.cursor:
             friends.append(friend)
-        print("The friends list is {}".format(friends))
+        # print("The friends list is {}".format(friends))
         return friends
 
     def add_new_friend_request(self, userid, friendid):
@@ -216,8 +216,10 @@ class Database(object):
         data = []
         for fid in self.cursor:
             data.append(fid)
-        
-        return data 
+        udata = []
+        for u in data[0]:
+            udata.append(u)
+        return udata 
 
 # query = ("select * from Clients")
 # custquery = ("CREATE TABLE customers (name VARCHAR(255), address(255))")
