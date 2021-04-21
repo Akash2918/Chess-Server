@@ -17,6 +17,7 @@ Rooms = []
 QUICK_PLAY = []
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.setsocketopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((IP, PORT))
 sock.listen(20)
 

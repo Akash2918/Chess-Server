@@ -53,6 +53,24 @@ class Client(object):
                 }
                 reqdata = pickle.dumps(req)
                 client.send_friend_request(reqdata)
+            
+            elif id == 24:                  ##Check existance of user
+                fid = data['FriendID']
+                data = self.db.check_existance_of_user(fid)
+                if data:
+                    rev = {
+                        'ID':24,
+                        'Data': data
+                    }
+                    self.conn.send(pickle.dumps(rev))
+                else:
+                    res = {
+                        'ID': 7,
+                        'Message': "No user with given ID" 
+                    }
+                res = pickle.dumps(res)
+                self.conn.send(res)
+
             elif id == 25:              ##Sending friend request status => request accept or reject normal request
                 uid = data['UserID']
                 fid = data['FriendID']
@@ -69,7 +87,7 @@ class Client(object):
                 res = pickle.dumps(res)
                 self.conn.send(res)
             
-            elif id == 25:                  ##Accept or reject the friend request
+            elif id == 26:                  ##Accept or reject the friend request
                 fid = data['FriendID']
                 self.db.add_friends_request_status(data)
 

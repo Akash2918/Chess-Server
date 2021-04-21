@@ -45,6 +45,7 @@ class Database(object):
         self._update_win_status_query = ("update Profile set Matches_Played = Matches_Played + 1, Matches_Won = Matches_Won + 1 where UserID = %s")
         self._update_lost_status_query = ("update Profile set Matches_Played = Matches_Played + 1 where UserID = %s")
         self._update_friends_accept_query = ("update Friends set STATUS = %s where UserID = %s and FriendID = %s")
+        self._existance_friend_query = ("select UserID from Clients where UserID = %s")
 
     def update_user_profile(self, uid, data):
         try:
@@ -209,6 +210,14 @@ class Database(object):
         except:
             print("Error while inserting data into database")
             return False
+        
+    def check_existance_of_user(self, fid):
+        self.cursor.execute(self._existance_friend_query, (fid, ))
+        data = []
+        for fid in self.cursor:
+            data.append(fid)
+        
+        return data 
 
 # query = ("select * from Clients")
 # custquery = ("CREATE TABLE customers (name VARCHAR(255), address(255))")
