@@ -15,13 +15,17 @@ except mysql.connector.Error as err:
     else:
         print(err)
 cursor = mydb.cursor()
+query2 = ('insert into Clients (UserID, Email, PASSWD, STATUS) values (%s, %s, %s, %s)')
 
+def insert_data(userid, email, passwd, status='Not Verified'):
+    cursor.execute(query2, (userid, email, passwd, status,))
 
 
 #query = ("select * from Clients")
 query = ('select * from Clients')
 custquery = ("CREATE TABLE customers (name VARCHAR(255), address(255))")
 print(mydb)
+
 
 
 cursor.execute(query)

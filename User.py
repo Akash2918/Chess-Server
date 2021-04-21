@@ -142,9 +142,9 @@ class Client(object):
                         'UserID': c['UserID'],
                         'Conn': c['conn']
                     }
-                    playroom = Room(roomid, user1, user2, [], db = self.db, rooms=self.Rooms)
+                    playroom = Room(roomid, user1, user2, db = self.db, rooms=self.Rooms)
                     rec = {
-                        'ID' : 20
+                        'ID' : 20,
                         'Sender' : data['UserID'],
                         'Reciever': self._userid,
                         'Message': "Friend request accepted",
@@ -162,7 +162,7 @@ class Client(object):
                     self.room = playroom
                 else :
                     rec = {
-                        'ID' : 20
+                        'ID' : 20,
                         'Sender' : data['FriendID'],
                         'Reciever': self._userid,
                         'Message': "Friend request rejected",

@@ -34,8 +34,8 @@ INSERT QUERIES
 
 ###################################################################################################################################
 
-insert into Clients (UserID, Email, Username, PASSWD) values ('Akash2918', 'akash@testemail.com', 'Akash@123'), ('Rutvik123', 'rutvik@testmail.com', 'Rutvik@123'), ('Hrishikesh', 'hrishi@testmail.com', 'Hrishi@123');
+insert into Clients (UserID, Email, PASSWD, STATUS) values ('Akash2918', 'akash@testemail.com', 'Akash@123', 'Verified'), ('Rutvik123', 'rutvik@testmail.com', 'Rutvik@123', 'Verified'), ('Hrishikesh', 'hrishi@testmail.com', 'Hrishi@123', 'Verified');
 
-insert into Friends (UserID, FriendID) values ('Akash2918', 'Hrishikesh'), ('Akash2918', 'Rutvik123'), ('Hrishikesh', 'Rutvik123');
+insert into Friends (UserID, FriendID, STATUS) values ('Akash2918', 'Hrishikesh', 'Accepted'), ('Akash2918', 'Rutvik123', 'Accepted'), ('Hrishikesh', 'Rutvik123', 'Accepted');
 
 

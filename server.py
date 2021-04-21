@@ -91,8 +91,8 @@ def handle_client(conn, ):
             email = data['Email']
             uid = data['UserID']
             
-            code = random_number()
-            Send_VerificationCode(to=email, uid=uid, code)
+            ncode = random_number()
+            Send_VerificationCode(to=email, uid=uid, code=ncode)
 
         elif id == 2:
             revcode = data['Code']
@@ -111,8 +111,8 @@ def handle_client(conn, ):
                     }
                 
             else:
-                code = random_number()
-                Send_VerificationCode(to=email, code)
+                ncode = random_number()
+                Send_VerificationCode(to=email, code=ncode)
                 data = {
                     'ID' : 9,
                     'Message':'Invalide Code, new verification code sent'
@@ -202,8 +202,8 @@ def Register_Client(conn, ):
                     'Message': 'Successful and varified',
                 }
             else:
-                code = random_number()
-                Send_VerificationCode(to=email, code)
+                ncode = random_number()
+                Send_VerificationCode(to=email, code=ncode)
                 data = {
                     'ID' : 9,
                     'Message':'Invalide Code, new verification code sent'

@@ -2,7 +2,7 @@ import random
 import pickle
 
 class Room(object):
-    def __init__(self, roomid, user1, user2, spectators= [], db, rooms):
+    def __init__(self, roomid=None, user1=None, user2=None, spectators= [], db=None, rooms=None):
         self.RoomID = roomid
         self.User1 = user1['UserID']          ##User is a dictonary containing userid, conn
         self.User2 = user2['UserID']
@@ -20,7 +20,7 @@ class Room(object):
         self.set_turns()
 
     def update_database(self):
-        self.db.insert_History_details(self.RoomID, self.move_log):
+        self.db.insert_History_details(self.RoomID, self.move_log)
         self.db.update_lost_status(self.lost)
         self.db.update_win_status(self.win)
         

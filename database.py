@@ -5,7 +5,7 @@ try:
         host = "localhost",
         user = "superuser",
         password = "Akash@2918",
-        database = 'testdb',
+        database = 'chessdb',
     )
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
@@ -44,10 +44,12 @@ class Database(object):
         self._insert_to_history_query = ("insert into History (RoomID, currentDate, Move_Logs) values (%s, NOW(), %s)")
         self._update_win_status_query = ("update Profile set Matches_Played = Matches_Played + 1, Matches_Won = Matches_Won + 1 where UserID = %s")
         self._update_lost_status_query = ("update Profile set Matches_Played = Matches_Played + 1 where UserID = %s")
+        self._update_friends_accept_query = ("update Friends set STATUS = %s where UserID = %s and FriendID = %s")
 
     def update_user_profile(self, uid, data):
         try:
             self.cursor.execute(self._update_profile_query, (data['Image'], uid, ))
+            mydb.commit()
             return True
         except:
             return False
@@ -55,14 +57,27 @@ class Database(object):
     def update_win_status(self, uid):
         try:
             self.cursor.execute(self._update_win_status_query, (uid, ))
+            mydb.commit()
             return True
         except:
             print("Error while updating win status")
             return False
 
+    def accept_friends_request(self, data):
+        uid = data['UserID']
+        fid = data['FriendID']
+        status = data['Status']
+        try:
+            self.cursor.execute(self._update_friends_accept_query, (status, fid, uid))
+            mydb.commit()
+            return True
+        except:
+            return False
+
     def update_lost_status(self, uid):
         try:
             self.cursor.execute(self._update_lost_status_query, (uid, ))
+            mydb.commit()
             return True
         except:
             print("Error while updating lost status")
@@ -71,6 +86,7 @@ class Database(object):
     def verify_user(self, uid):
         try:
             self.cursor.execute(self._verify_user_query, (uid, "Verified", ))
+            mydb.commit()
             return True
         except:
             print("Error while varifing user")
@@ -79,6 +95,7 @@ class Database(object):
     def update_user_password(self, uid, password):
         try:
             self.cursor.execute(self._update_password_query, (password, uid, ))
+            mydb.commit()
             return True
         except:
             return False
@@ -97,6 +114,7 @@ class Database(object):
                 return False
         except:
             print("Error while processing email query")
+            return False
 
     def existance_of_roomid(self, roomid):
         self.cursor.execute(self._existance_roomid_query, (roomid, ))
@@ -108,6 +126,7 @@ class Database(object):
     def insert_game_details(self, roomid, player1, player2):
         try:
             self.cursor.execute(self._insert_roomid_todb_query, (roomid, player1, player2, ))
+            mydb.commit()
             return True
         except:
             return False
@@ -115,6 +134,7 @@ class Database(object):
     def insert_History_details(self, roomid, move_log):
         try:
             self.cursor.execute(self._insert_to_history_query, (roomid, movelog, ))
+            mydb.commit()
             return True
         except:
             print("Error while inserting molog to database")
@@ -130,13 +150,14 @@ class Database(object):
         return True if len(users) == 1 else False
     
     def Add_new_User(self, UserID, Email, Password):
-        self._uid, self._email,  self._password = UserID, Email, Password
-        self.cursor.execute(self._unique_email_query, (self._email, ))
+        #self._uid, self._email,  self._password = UserID, Email, Password
+        self.cursor.execute(self._unique_email_query, (Email, ))
         data = []
         for email in self.cursor:
             data.append(email)
         if len(data) == 0:
-            self.cursor.execute(self._add_new_user_query, (self._uid, self._email, self._password, "NOT Verified"))
+            self.cursor.execute(self._add_new_user_query, (UserID, Email, Password, "NOT Verified", ))
+            mydb.commit()
             return True
         else:
             return False
@@ -183,6 +204,7 @@ class Database(object):
     def add_new_friend_request(self, userid, friendid):
         try:
             self.cursor.execute(self._add_new_friend_request_query, (userid, friendid, 'Pending'))
+            mydb.commit()
             return True
         except:
             print("Error while inserting data into database")
