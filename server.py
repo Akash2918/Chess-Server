@@ -246,8 +246,8 @@ while not CLOSE:
         continue
 
 
-while len(THREADS) > 0:
-    for t in THREADS:
-        t.join()
+# while len(THREADS) > 0:
+#     for t in THREADS:
+#         t.join()
 
 print("Closing the server..........")

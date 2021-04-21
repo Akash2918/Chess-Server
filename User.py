@@ -71,7 +71,7 @@ class Client(object):
             
             elif id == 25:                  ##Accept or reject the friend request
                 fid = data['FriendID']
-
+                self.db.add_friends_request_status(data)
 
             elif id == 30:              ## Sending chat messages includes self uid room_id
                 self.room.chat_messages.append(data)

@@ -63,7 +63,7 @@ class Database(object):
             print("Error while updating win status")
             return False
 
-    def accept_friends_request(self, data):
+    def add_friends_request_status(self, data):
         uid = data['UserID']
         fid = data['FriendID']
         status = data['Status']
