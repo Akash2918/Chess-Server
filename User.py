@@ -53,7 +53,7 @@ class Client(object):
                         'Message': 'Friend request from user to play chess'
                     }
                     reqdata = pickle.dumps(req)
-                    client.send_friend_request(reqdata)
+                    client.conn.send(reqdata)
                 
                 elif id == 24:                  ##Check existance of user
                     fid = data['FriendID']
@@ -134,6 +134,21 @@ class Client(object):
                     res = pickle.dumps(res)
                     self.conn.send(res)
                 
+                elif id == 41:      ##Update User Profile
+                
+                    if self.db.update_user_profile(self._userid, data):
+                        data = {
+                            'ID':41,
+                            'Message': 'User profile updated successfully'
+                        }
+                    else:
+                        data = {
+                            'ID': 7,
+                            'Message': 'Failed to update user profile'
+                        }
+                    rev = pickle.dumps(data)
+                    self.conn.send(rev)
+                        
                 elif id == 45:              ## Friend request from friend to play chess
                     req = {
                         'ID': 50,
