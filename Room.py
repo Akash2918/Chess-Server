@@ -35,12 +35,14 @@ class Room(object):
             data1 = {
                 'ID': 2200,
                 'Turn': 'White',
-                'Message': 'Start game with white pieces'
+                'Message': 'Start game with white pieces',
+                'RoomID': self.RoomID
             }
             data2 = {
                 'ID': 2200,
                 'Turn': 'Black',
-                'Message': 'Start game with black pieces'
+                'Message': 'Start game with black pieces',
+                'RoomID': self.RoomID
             }
             # res1 = pickle.dumps(data1)
             # res2 = pickle.dumps(data2)
@@ -50,12 +52,14 @@ class Room(object):
             data2 = {
                 'ID': 2200,
                 'Piece': 'White',
-                'Message': 'Start game with white pieces'
+                'Message': 'Start game with white pieces',
+                'RoomID': self.RoomID
             }
             data1 = {
                 'ID': 2200,
                 'Piece': 'Black',
-                'Message': 'Start game with black pieces'
+                'Message': 'Start game with black pieces',
+                'RoomID': self.RoomID
             }
 
         res1 = pickle.dumps(data1)

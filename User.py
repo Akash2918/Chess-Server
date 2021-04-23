@@ -191,25 +191,25 @@ class Client(object):
                         
                         
                         for client in self.Users:
-                            if data['UserID'] == client['UserID']:
+                            if data['FriendID'] == client['UserID']:
                                 c = client
                                 break
                         clientconn = c['conn']
                         user2 = {
                             'UserID': c['UserID'],
-                            'Conn': c['conn']
+                            'Conn': clientconn
                         }
                         playroom = Room(roomid, user1, user2, db = self.db, rooms=self.Rooms)
-                        rec = {
-                            'ID' : 20,
+                        nrec = {
+                            'ID' : 55,
                             'Sender' : data['UserID'],
                             'Reciever': self._userid,
                             'Message': "Friend request accepted",
                             'Status': status,
                             'RoomID': roomid,
-                            'Room' : playroom
+                            #'Room' : playroom
                         }
-                        clientconn.send(pickel.dumps(rec))
+                        clientconn.send(pickel.dumps(nrec))
                         newroom = {
                             'Room': playroom,
                             'RoomID': roomid,
@@ -219,7 +219,7 @@ class Client(object):
                         self.room = playroom
                     else :
                         rec = {
-                            'ID' : 20,
+                            'ID' : 55,
                             'Sender' : data['FriendID'],
                             'Reciever': self._userid,
                             'Message': "Friend request rejected",
@@ -269,6 +269,8 @@ class Client(object):
                     'FriendID': self._userid,
                     'UserID': user['UserID']
                 }
+                conn = user['conn']
+                conn.send(pickle.dumps(online_friend))
             else:
                 continue
         return data

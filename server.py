@@ -75,14 +75,14 @@ def handle_client(conn, ):
                 data = pickle.dumps(data)
                 conn.send(data)
                 #Starting client
-                
+                #print("1: {}".format(len(Users)))
                 c = Client(UserID=userid, conn=conn, database=DB, users=Users, rooms=Rooms)
-                # for usr in Users:
-                #     if usr['UserID'] == userid:
-                #         usr['conn'] = conn
-                #         break
-                #     else:
+                for usr in Users:
+                    if usr['UserID'] == userid:
+                        Users.remove(usr)
+                        break
                 Users.append({'UserID':userid, 'conn': conn, 'Client': c})
+                #print("2: {}".format(len(Users)))
                 c.start()
                 Exit = True
             else:
