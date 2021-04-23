@@ -77,6 +77,11 @@ def handle_client(conn, ):
                 #Starting client
                 
                 c = Client(UserID=userid, conn=conn, database=DB, users=Users, rooms=Rooms)
+                # for usr in Users:
+                #     if usr['UserID'] == userid:
+                #         usr['conn'] = conn
+                #         break
+                #     else:
                 Users.append({'UserID':userid, 'conn': conn, 'Client': c})
                 c.start()
                 Exit = True
@@ -252,7 +257,7 @@ while not CLOSE:
 
 
 # while len(THREADS) > 0:
-#     for t in THREADS:
-#         t.join()
+for t in THREADS:
+    t.join()
 
 print("Closing the server..........")

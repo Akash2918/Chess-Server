@@ -13,6 +13,9 @@ class Client(object):
         self.room = None
         self.spectating  = False
         self.playing = False
+        self.imgbuf = b''
+        self.pieces = None
+        self.piece_no = None
 
     def start(self):
         LOGOUT = False
@@ -34,26 +37,40 @@ class Client(object):
         sdata = pickle.dumps(data)
         self.conn.send(sdata)
         while not LOGOUT:
-            rec = self.conn.recv(4096)
+            rec = self.conn.recv(2048)
             if rec :
                 data = pickle.loads(rec)
                 id = data['ID']
                 if id == 20:                #sending requst to the friend with friendid for playing
                     friendId = data['FriendID']
+                    req = {
+                            'ID' : 50,
+                            'Sender': self._userid,
+                            'Reciever': friendId,
+                            'Message': 'Friend request from user to play chess'
+                        }
+                    reqdata = pickle.dumps(req)
                     for u in self.Users:
                         if friendId == u['UserID']:
                             client = u['Client']
+                            cconn = u['conn']
+                            cconn.send(reqdata)
+                            print("Message sent")
                             break
                         else:
                             continue
-                    req = {
-                        'ID' : 45,
-                        'Sender': self._userid,
-                        'Reciever': friendId,
-                        'Message': 'Friend request from user to play chess'
-                    }
-                    reqdata = pickle.dumps(req)
-                    client.conn.send(reqdata)
+                    # if client:
+                    #     req = {
+                    #         'ID' : 50,
+                    #         'Sender': self._userid,
+                    #         'Reciever': friendId,
+                    #         'Message': 'Friend request from user to play chess'
+                    #     }
+                    #     reqdata = pickle.dumps(req)
+                    #     client.conn.send(reqdata)
+                    #     print("Message sent")
+                    # else:
+                    #     continue
                 
                 elif id == 24:                  ##Check existance of user
                     fid = data['FriendID']
@@ -135,19 +152,23 @@ class Client(object):
                     self.conn.send(res)
                 
                 elif id == 41:      ##Update User Profile
-                
-                    if self.db.update_user_profile(self._userid, data):
-                        data = {
-                            'ID':41,
-                            'Message': 'User profile updated successfully'
-                        }
-                    else:
-                        data = {
-                            'ID': 7,
-                            'Message': 'Failed to update user profile'
-                        }
-                    rev = pickle.dumps(data)
-                    self.conn.send(rev)
+                    self.imgbuf += data['Image']
+                    self.piece_no = data['Piece_No']
+                    self.pieces = data['Pieces']
+                    print("{} recieved ".format(self.piece_no))
+
+                    # if self.db.update_user_profile(self._userid, data):
+                    #     data = {
+                    #         'ID':41,
+                    #         'Message': 'User profile updated successfully'
+                    #     }
+                    # else:
+                    #     data = {
+                    #         'ID': 7,
+                    #         'Message': 'Failed to update user profile'
+                    #     }
+                    # rev = pickle.dumps(data)
+                    # self.conn.send(rev)
                         
                 elif id == 45:              ## Friend request from friend to play chess
                     req = {
@@ -232,6 +253,8 @@ class Client(object):
                     continue
             else:
                 continue
+        return
+
 
 
 
@@ -240,6 +263,12 @@ class Client(object):
         for user in self.Users:
             if user['UserID'] in friends:
                 data.append(user['UserID'])
+                conn = user['conn']
+                online_friend = {
+                    'ID' : 11,
+                    'FriendID': self._userid,
+                    'UserID': user['UserID']
+                }
             else:
                 continue
         return data
