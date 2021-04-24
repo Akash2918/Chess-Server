@@ -2,9 +2,10 @@ import pickle
 from Room import Room
 import random
 import struct
+import sys
 
 class Client(object):
-    def __init__(self, UserID, conn, database, users, rooms):
+    def __init__(self, UserID, conn, database, users, rooms, threads):
         self._userid = UserID
         self.conn = conn
         self.db = database
@@ -16,13 +17,14 @@ class Client(object):
         self.imgbuf = b''
         self.pieces = None
         self.piece_no = None
+        self.threads = threads
 
     def start(self):
         LOGOUT = False
         friends = self.db.get_friends_list(self._userid)
         friends_requests = self.db.get_friends_request_list(self._userid)
         friends_rejected = self.db.get_friends_rejected_list(self._userid)
-        online_friends = self.get_online_friends(friends)
+        online_friends = self.get_online_friends(friends, True)
         busy_friends = self.get_busy_friends(online_friends)
         online_rooms = self.get_online_rooms(friends)
         data = {
@@ -209,7 +211,7 @@ class Client(object):
                             'RoomID': roomid,
                             #'Room' : playroom
                         }
-                        clientconn.send(pickel.dumps(nrec))
+                        clientconn.send(pickle.dumps(nrec))
                         newroom = {
                             'Room': playroom,
                             'RoomID': roomid,
@@ -231,6 +233,7 @@ class Client(object):
                 elif id == 60:                          ##Board messages
                     self.room.board_messaes.append(data)
                 elif id == 65:                          #LOGOUT
+                    print("Recieved logout message from {}".format(self._userid))
                     if self.playing:
                         res = {
                             'ID': 7,
@@ -245,8 +248,15 @@ class Client(object):
                             self.room.spectators.remove(newuser)
                         except:
                             print("Error while removing spectator from list")
+                    self.get_online_friends(friends, False)
+                    # for usr in self.threads:
+                    #     if self.conn == usr['conn']:
+                    #         thread = usr['Thread']
+                    #         break
+                    #thread.join()
+                    print("Thread joined and logout successful")
                     LOGOUT = True
-
+                    sys.exit()
 
                 else:
                     print("Data : {}".formta(data))
@@ -258,19 +268,30 @@ class Client(object):
 
 
 
-    def get_online_friends(self, friends):      ## get the list of friends who are the friends of user and are online
+    def get_online_friends(self, friends, flag):      ## get the list of friends who are the friends of user and are online
         data = []
         for user in self.Users:
             if user['UserID'] in friends:
                 data.append(user['UserID'])
-                conn = user['conn']
-                online_friend = {
-                    'ID' : 11,
-                    'FriendID': self._userid,
-                    'UserID': user['UserID']
-                }
-                conn = user['conn']
-                conn.send(pickle.dumps(online_friend))
+                if flag:
+                    #conn = user['conn']
+                    online_friend = {
+                        'ID' : 11,
+                        'FriendID': self._userid,
+                        'UserID': user['UserID']
+                    }
+                    conn = user['conn']
+                    conn.send(pickle.dumps(online_friend))
+                else:
+                    offline_friend = {
+                        'ID':12,
+                        'FriendID': self._userid,
+                        'UserID': user['UserID'],
+                        'Message': "Friend is offline"
+                    }
+                    conn = user['conn']
+                    conn.send(pickle.dumps(offline_friend))
+                
             else:
                 continue
         return data

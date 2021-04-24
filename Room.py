@@ -51,13 +51,13 @@ class Room(object):
         else:
             data2 = {
                 'ID': 2200,
-                'Piece': 'White',
+                'Turn': 'White',
                 'Message': 'Start game with white pieces',
                 'RoomID': self.RoomID
             }
             data1 = {
                 'ID': 2200,
-                'Piece': 'Black',
+                'Turn': 'Black',
                 'Message': 'Start game with black pieces',
                 'RoomID': self.RoomID
             }

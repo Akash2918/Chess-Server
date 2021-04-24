@@ -76,14 +76,16 @@ def handle_client(conn, ):
                 conn.send(data)
                 #Starting client
                 #print("1: {}".format(len(Users)))
-                c = Client(UserID=userid, conn=conn, database=DB, users=Users, rooms=Rooms)
+                c = Client(UserID=userid, conn=conn, database=DB, users=Users, rooms=Rooms, threads=THREADS)
                 for usr in Users:
                     if usr['UserID'] == userid:
                         Users.remove(usr)
+                        print("User removed from the existing list")
                         break
                 Users.append({'UserID':userid, 'conn': conn, 'Client': c})
                 #print("2: {}".format(len(Users)))
                 c.start()
+                print("{} User logout".format(userid))
                 Exit = True
             else:
                 data = {
@@ -133,7 +135,7 @@ def handle_client(conn, ):
             }
             data = pickle.dumps(data)
             conn.send(data)
-            
+    print("Returning from handle client")        
     return
 
 # def forgot_password(conn):
@@ -234,7 +236,7 @@ while not CLOSE:
         if rec == 'Request':
             conn.send("Connected".encode())
             thread = threading.Thread(target=handle_client, args=(conn,))
-            THREADS.append(thread)
+            THREADS.append({'conn': conn,'Thread':thread})
             thread.start()
         elif rec == 'Register':
             conn.send("Connected".encode())
