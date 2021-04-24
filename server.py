@@ -260,6 +260,6 @@ while not CLOSE:
 
 # while len(THREADS) > 0:
 for t in THREADS:
-    t.join()
+    t['Thread'].join()
 
 print("Closing the server..........")

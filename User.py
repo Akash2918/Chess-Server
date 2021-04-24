@@ -114,7 +114,17 @@ class Client(object):
                     self.db.add_friends_request_status(data)
 
                 elif id == 30:              ## Sending chat messages includes self uid room_id
-                    self.room.chat_messages.append(data)
+                    #self.room.chat_messages.append(data)
+                    #self.room.board_messaes.append(data)
+                    print("The recieved mesage is {}".format(data))
+                    room = data['RoomID']
+                    chatroom = None
+                    for croom in self.Rooms:
+                        if croom['RoomID'] == room:
+                            chatroom = croom['Room']
+                            break
+                    chatroom.chat_messages.append(data)
+                    #chatroom.board_messages.append(data)
                     # continue
 
                 elif id == 35:              ## Sending spectete message includes self uid room_id
@@ -217,13 +227,16 @@ class Client(object):
                             'RoomID': roomid,
                         }
                         self.Rooms.append(newroom)
-                        playroom.start()
                         self.room = playroom
+                        print(bool(self.room))
+                        self.room.start()
+                        #playroom.start()
+                        #self.room = playroom
                     else :
                         rec = {
                             'ID' : 55,
-                            'Sender' : data['FriendID'],
-                            'Reciever': self._userid,
+                            'Sender' : self._userid,#data['FriendID'],
+                            'Reciever': data['FriendID'], #self._userid,
                             'Message': "Friend request rejected",
                             'Status': status
                         }
