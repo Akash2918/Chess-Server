@@ -42,6 +42,7 @@ class Client(object):
             rec = self.conn.recv(2048)
             if rec :
                 data = pickle.loads(rec)
+                print("The test data ", data)
                 id = data['ID']
                 if id == 20:                #sending requst to the friend with friendid for playing
                     friendId = data['FriendID']
