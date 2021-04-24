@@ -114,7 +114,7 @@ class Room(object):
         while not self.game_end:
             if len(self.chat_messages) > 0:
                 print("The chat messages are {}".format(self.chat_messages))
-                message = self.chat_messages.pop(0)
+                message = self.chat_messages.pop()
                 data = pickle.dumps(message)
                 self.conn1.send(data)
                 self.conn2.send(data)
@@ -127,7 +127,7 @@ class Room(object):
         while not self.game_end:
             if len(self.board_messages) > 0:
                 print("The pending board messages {}".format(self.board_messages))
-                msg = self.board_messages.pop(0)
+                msg = self.board_messages.pop()
                 data = pickle.dumps(msg)
                 self.conn1.send(data)
                 self.conn2.send(data)
@@ -137,15 +137,19 @@ class Room(object):
         return
 
     def start(self):
-        while True:
-            if len(self.board_messages) > 0:
-                print("{}".format(self.board_messages))
-                message = self.board_messages.pop(0)
-                print("{}".format(message))
-            elif len(self.chat_messages) > 0:
-                print("{}".format(self.chat_messages))
-                message = self.chat_messages.pop(0)
-                print("The chat messages is {}".format(message))    
+        print("User 1 {}".format(self.User1))
+        print("User2 {}".format(self.User2))
+        print("Conn1 {}".format(self.conn1))
+        print("conn2 {}".format(self.conn2))
+        # while True:
+        #     if len(self.board_messages) > 0:
+        #         print("{}".format(self.board_messages))
+        #         message = self.board_messages.pop(0)
+        #         print("{}".format(message))
+        #     elif len(self.chat_messages) > 0:
+        #         print("{}".format(self.chat_messages))
+        #         message = self.chat_messages.pop(0)
+        #         print("The chat messages is {}".format(message))    
 
         # while not self.game_end :
         #     if len(self.board_messages) > 0:
