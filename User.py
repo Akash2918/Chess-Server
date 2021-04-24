@@ -31,7 +31,7 @@ class Client(object):
         data = {
             'ID': 10,
             'Friends': friends,
-            'Friends_Requests': friends_requests,
+            'Friend_Requests': friends_requests,
             'Friends_Rejected': friends_rejected,
             'Online_Friends': online_friends,
             'Busy_Friends': list(busy_friends),
@@ -103,6 +103,21 @@ class Client(object):
                             'ID': 25,
                             'Message': 'Request added successfully'
                         }
+                        for usr in self.Users:
+                            if usr['UserID'] == fid:
+                                fconn = usr['conn']
+                                fdata = {
+                                    'ID':27,                    ##Send online friend request
+                                    'UserID':fid,
+                                    'FriendID':uid,
+                                    'Message':"Friend request sent by friend"
+                                }
+                                fdata = pickle.dumps(fdata)
+                                fconn.send(fdata)
+                                break
+                            else:
+                                continue
+                        
                     else:
                         res = {
                             'ID': 7,
@@ -114,6 +129,22 @@ class Client(object):
                 elif id == 26:                  ##Accept or reject the friend request
                     fid = data['FriendID']
                     self.db.add_friends_request_status(data)
+
+                elif id == 28:              #delete friend from friend list
+                    friendID = data['FriendID']
+                    if self.db.remove_friend_from_friendlist(self._userid, friendID):
+                        data = {
+                            'ID':28,
+                            'Message':'Friend deleted from friend list'
+                        }
+                    else:
+                        data = {
+                            'ID' : 7,
+                            'Message': "Error while deleting friend"
+                        }
+                    data = pickle.dumps(data)
+                    self.conn.send(data)
+
 
                 elif id == 30:              ## Sending chat messages includes self uid room_id
                     #self.room.chat_messages.append(data)
@@ -254,8 +285,8 @@ class Client(object):
                             'Message': "Friend request rejected",
                             'Status': status
                         }
-                    srec = pickle.dumps(rec)
-                    self.conn.send(srec)
+                        srec = pickle.dumps(rec)
+                        self.conn.send(srec)
                     # continue
                 elif id == 60:                          ##Board messages
                     self.room.board_messaes.append(data)
@@ -286,7 +317,7 @@ class Client(object):
                     sys.exit()
 
                 else:
-                    print("Data : {}".formta(data))
+                    print("Data : {}".format(data))
                     continue
             else:
                 continue

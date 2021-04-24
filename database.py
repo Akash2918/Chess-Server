@@ -46,6 +46,8 @@ class Database(object):
         self._update_lost_status_query = ("update Profile set Matches_Played = Matches_Played + 1 where UserID = %s")
         self._update_friends_accept_query = ("update Friends set STATUS = %s where UserID = %s and FriendID = %s")
         self._existance_friend_query = ("select UserID from Clients where UserID = %s")
+        self._existance_of_friend_query = ("select * from Friends where UserID = %s and FriendID = %s")          
+        self._delete_friend_query = ("delete from Friends where UserID = %s and FriendID = %s")
 
     def update_user_profile(self, uid, data):
         try:
@@ -55,6 +57,26 @@ class Database(object):
         except:
             return False
     
+    def remove_friend_from_friendlist(self, uid, fid):
+        data = []
+        self.cursor.execute(self._existance_of_friend_query, (uid, fid, ))
+        for row in self.cursor:
+            data.append(row)
+        if data :
+            self.cursor.execute(self._delete_friend_query, (uid, fid, ))
+            mydb.commit()
+        else:
+            self.cursor.execute(self._existance_of_friend_query, (fid, uid,))
+            for row in self.cursor:
+                data.append(row)
+            if data:
+                self.cursor.execute(self._delete_friend_query, (fid, uid, ))
+                print("friend with id = {} deleted".format(fid))
+                mydb.commit()
+                return True
+        return True
+
+
     def update_win_status(self, uid):
         try:
             self.cursor.execute(self._update_win_status_query, (uid, ))

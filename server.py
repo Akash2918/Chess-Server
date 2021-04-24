@@ -59,11 +59,11 @@ def Send_Welcome_Email(to, uid):
     except:
         return False
 
-def handle_client(conn, ):
+def handle_client(conn, data):
     Exit = False
     while not Exit:    
-        rec = conn.recv(1024)
-        data =  pickle.loads(rec)
+        #rec = conn.recv(1024)
+        #data =  pickle.loads(rec)
         id = data['ID']
         userid, password = data['UserID'], data['Password']
         if id == 5:
@@ -94,7 +94,7 @@ def handle_client(conn, ):
                 }
                 data = pickle.dumps(data)
                 conn.send(data)
-                return
+                #return
         elif id == 6:           ##Forgot password
             email = data['Email']
             uid = data['UserID']
@@ -128,6 +128,9 @@ def handle_client(conn, ):
                 
             data = pickle.dumps(data)
             conn.send(data)
+        elif id == 600:
+            Exit = True
+            return
         else:
             data = {
                 'ID': 7,
@@ -158,13 +161,13 @@ def handle_client(conn, ):
 
 
 
-def Register_Client(conn, ):
+def Register_Client(conn, data):
     Exit = False
     Variefy = False
     while not Variefy:
         print("Inside the loop register")
-        rev = conn.recv(1024)
-        data = pickle.loads(rev)
+        #rev = conn.recv(1024)
+        #data = pickle.loads(rev)
         id = data['ID']
         if id == 1:
             uid = data['UserID']
@@ -232,14 +235,16 @@ print("Server is running on port {}".format(PORT))
 while not CLOSE:
     try:
         conn, addr = sock.accept()
-        rec = conn.recv(1024).decode()
-        if rec == 'Request':
-            conn.send("Connected".encode())
-            thread = threading.Thread(target=handle_client, args=(conn,))
+        #rec = conn.recv(1024).decode()
+        rec = conn.recv(2048)
+        data = pickle.loads(rec)
+        if data[ID] == 5:
+            #conn.send("Connected".encode())
+            thread = threading.Thread(target=handle_client, args=(conn,data,))
             THREADS.append({'conn': conn,'Thread':thread})
             thread.start()
-        elif rec == 'Register':
-            conn.send("Connected".encode())
+        elif data['ID'] == 1:
+            #conn.send("Connected".encode())
             thread1 = threading.Thread(target=Register_Client, args=(conn, ))
             THREADS.append(thread1)
             thread1.start()
