@@ -116,8 +116,11 @@ class Room(object):
                 print("The chat messages are {}".format(self.chat_messages))
                 message = self.chat_messages.pop()
                 data = pickle.dumps(message)
-                self.conn1.send(data)
-                self.conn2.send(data)
+                uid = message['UserID']
+                if uid == self.User1:
+                    self.conn2.send(data)
+                else:
+                    self.conn1.send(data)
             else:
                 continue
         print("Returning from chat messages")

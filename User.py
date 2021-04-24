@@ -1,5 +1,6 @@
 import pickle
-from Room import Room
+#from Room import Room
+from NewRoom import Room
 import random
 import struct
 import sys
@@ -124,7 +125,8 @@ class Client(object):
                         if croom['RoomID'] == room:
                             chatroom = croom['Room']
                             break
-                    chatroom.chat_messages.append(data)
+                    #chatroom.chat_messages.append(data)
+                    chatroom.board_messages.append(data)
                     #chatroom.board_messages.append(data)
                     # continue
                 
@@ -226,7 +228,7 @@ class Client(object):
                         playroom = Room(roomid, user1, user2, db = self.db, rooms=self.Rooms)
                         nrec = {
                             'ID' : 55,
-                            'Sender' : data['UserID'],
+                            'Sender' : data['FriendID'],
                             'Reciever': self._userid,
                             'Message': "Friend request accepted",
                             'Status': status,
