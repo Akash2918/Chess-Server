@@ -126,6 +126,17 @@ class Client(object):
                     chatroom.chat_messages.append(data)
                     #chatroom.board_messages.append(data)
                     # continue
+                
+                elif id == 31:
+                    print("Board message recieved")
+                    print(data)
+                    room = data['RoomID']
+                    boardroom = None
+                    for broom in self.Rooms:
+                        if broom['RoomID'] == room:
+                            boardroom = broom['Room']
+                            break
+                    boardroom.board_messages.append(data)
 
                 elif id == 35:              ## Sending spectete message includes self uid room_id
                     roomid = data['RoomID']
