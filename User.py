@@ -1,12 +1,13 @@
 import pickle
 #from Room import Room
 from NewRoom import Room
+import time
 import random
 import struct
 import sys
 
 class Client(object):
-    def __init__(self, UserID, conn, database, users, rooms, threads):
+    def __init__(self, UserID, conn, database, users, rooms, quickplay, lock):
         self._userid = UserID
         self.conn = conn
         self.db = database
@@ -18,7 +19,10 @@ class Client(object):
         self.imgbuf = b''
         self.pieces = None
         self.piece_no = None
-        self.threads = threads
+        self.quickplay = quickplay
+        self.lock = lock
+        self.request = False
+        self.cancel = False
 
     def start(self):
         LOGOUT = False
@@ -189,14 +193,23 @@ class Client(object):
                             'ID': 35,
                             'Message': "You have been added to the spectators list"
                         }
+                        data = pickle.dumps(res)
+                        self.conn.send(data)
+                        move_log = self.room.read_from_file()
+                        res = {
+                            'ID': 450,
+                            'MoveLog': move_log
+                        }
+                        data = pickle.dumps(res)
+                        self.conn.send(data)
                     else:
                         
                         res = {
                             'ID': 7,
                             'Message': "Room with given ID does not exist" 
                         }
-                    res = pickle.dumps(res)
-                    self.conn.send(res)    
+                        res = pickle.dumps(res)
+                        self.conn.send(res)    
 
                 elif id == 40:              ## Get user profile
                     profile = self.db.get_profile(self._userid)
@@ -273,6 +286,7 @@ class Client(object):
                         }
                         self.Rooms.append(newroom)
                         self.room = playroom
+                        c['Client'].room = playroom
                         print(bool(self.room))
                         self.room.start()
                         #playroom.start()
@@ -288,8 +302,48 @@ class Client(object):
                         srec = pickle.dumps(rec)
                         self.conn.send(srec)
                     # continue
+                elif id == 56:                          ###Quick play message
+                    self.quickplay.append({'UserID':self._userid, 'conn':self.conn})
+                    while not self.cancel:
+                        if self.request:
+                            break
+                        else:
+                            continue
+                elif id == 58:                  ##Quick play room creating
+                    uid = data['UserID']
+                    fid = data['FriendID']
+                    for usr in self.Users:
+                        if usr['UserID'] == fid:
+                            c = usr
+                            break
+                    c['Client'].playing = True
+                    self.playing = True
+                    roomid = self.generate_roomid()
+                    user1 = {
+                        'conn':self.conn,
+                        'UserID':self._userid
+                    }
+                    user2 = {
+                        'conn' = c['conn'],
+                        'UserID' = fid,
+                    }
+                    
+                    playroom = Room(roomid=roomid, user1=user1, user2=user2, db = self.db, rooms=self.Rooms)
+                    self.room = playroom
+                    c['Client'].room = playroom
+                    aroom = {
+                        'Room':playroom,
+                        'RoomID':roomid
+                    }
+                    self.Rooms.append(aroom)
+                    self.room.start()
+
+                elif id == 59:
+                    self.cancel = True
+
+
                 elif id == 60:                          ##Board messages
-                    self.room.board_messaes.append(data)
+                    self.room.board_messages.append(data)
                 elif id == 65:                          #LOGOUT
                     print("Recieved logout message from {}".format(self._userid))
                     if self.playing:
@@ -307,11 +361,6 @@ class Client(object):
                         except:
                             print("Error while removing spectator from list")
                     self.get_online_friends(friends, False)
-                    # for usr in self.threads:
-                    #     if self.conn == usr['conn']:
-                    #         thread = usr['Thread']
-                    #         break
-                    #thread.join()
                     print("Thread joined and logout successful")
                     LOGOUT = True
                     sys.exit()
@@ -396,4 +445,53 @@ class Client(object):
                 continue
         
         return set(rooms)
-        
+
+    def get_opponent(self):
+        while self.lock:
+            if self.request:
+                return
+            else:
+                continue
+        self.lock = True
+        self.quickplay.remove({'UserID':self._userid, 'conn': self.conn})
+        if len(self.quickplay) > 1:
+            opponent = self.quickplay.pop()
+            self.lock = False
+            opp_uid = opponent['UserID']
+            for usr in self.Users:
+                if usr['UserID'] == opp_uid:
+                    opp_usr = usr
+                    break
+            if opp_usr:
+                opp_client = opp_usr['Client']
+                opp_client.request = True
+            data = {
+                'ID':56,
+                'FriendID': opp_uid,
+                'UserID': self._userid,
+                'Message': "Quick play request matched with given friendid"
+            }
+            rev = pickle.dumps(data)
+            self.conn.send(rev)
+            opp_conn = opponent['conn']
+            data = {
+                'ID':57,
+                'FriendID':self._userid,
+                'UserID':opp_uid,
+                'Message':"Quick play request matched with given FriendID wait for 2200"
+            }
+            rev = pickle.dumps(data)
+            opp_conn.send(rev)
+        else:
+            data = {
+                'ID':400,
+                'UserID':self._userid,
+                'Message': 'Opponent not exist'
+            }
+            rev = pickle.dumps(data)
+            self.conn.send(rev)
+            self.cancel = True
+            self.quickplay.remove({'UserID':self._userid, 'conn': self.conn})
+            return
+        self.cancel = True
+        return

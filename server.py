@@ -15,6 +15,7 @@ DB = Database()
 Users = []
 Rooms = []
 QUICK_PLAY = []
+LOCK = False
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -61,6 +62,7 @@ def Send_Welcome_Email(to, uid):
 
 def handle_client(conn, data):
     Exit = False
+    print(data)
     while not Exit:    
         #rec = conn.recv(1024)
         #data =  pickle.loads(rec)
@@ -68,24 +70,29 @@ def handle_client(conn, data):
         userid, password = data['UserID'], data['Password']
         if id == 5:
             if DB.validate_user(userid, password):
-                data = {
+                rdata = {
                     'ID': 500,
                     'Message' : 'Login successfull'
                 }
-                data = pickle.dumps(data)
-                conn.send(data)
+                rdata = pickle.dumps(rdata)
+                conn.send(rdata)
                 #Starting client
                 #print("1: {}".format(len(Users)))
-                c = Client(UserID=userid, conn=conn, database=DB, users=Users, rooms=Rooms, threads=THREADS)
-                for usr in Users:
-                    if usr['UserID'] == userid:
-                        Users.remove(usr)
-                        print("User removed from the existing list")
-                        break
-                Users.append({'UserID':userid, 'conn': conn, 'Client': c})
-                #print("2: {}".format(len(Users)))
-                c.start()
-                print("{} User logout".format(userid))
+                loggedin = data['Loggedin']
+                if loggedin:
+                    c = Client(UserID=userid, conn=conn, database=DB, users=Users, rooms=Rooms, quickplay = QUICK_PLAY, lock = LOCK)
+                    for usr in Users:
+                        if usr['UserID'] == userid:
+                            Users.remove(usr)
+                            print("User removed from the existing list")
+                            break
+                    Users.append({'UserID':userid, 'conn': conn, 'Client': c})
+                    #print("2: {}".format(len(Users)))
+                    c.start()
+                    print("{} User logout".format(userid))
+                else:
+                    Exit = True
+                    
                 Exit = True
             else:
                 data = {
@@ -161,19 +168,19 @@ def handle_client(conn, data):
 
 
 
-def Register_Client(conn, data):
+def Register_Client(conn, rdata):
     Exit = False
     Variefy = False
     while not Variefy:
         print("Inside the loop register")
         #rev = conn.recv(1024)
         #data = pickle.loads(rev)
-        id = data['ID']
+        id = rdata['ID']
         if id == 1:
-            uid = data['UserID']
+            uid = rdata['UserID']
             # uname = data['Username']
-            email = data['Email']
-            passwd = data['Password']
+            email = rdata['Email']
+            passwd = rdata['Password']
             ####Add these fields to Clients table
             #try:
             if (DB.Add_new_User(uid, email, Password= passwd)):
@@ -204,6 +211,8 @@ def Register_Client(conn, data):
             
             data = pickle.dumps(data)
             conn.send(data)
+            rev = sock.recv(2048)
+            rdata = pickle.dumps(rev)
             Exit = True
         elif id == 2:
             revcode = data['Code']
@@ -216,8 +225,8 @@ def Register_Client(conn, data):
                     'Message': 'Successful and varified',
                 }
             else:
-                ncode = random_number()
-                Send_VerificationCode(to=email, code=ncode)
+                #ncode = random_number()
+                #Send_VerificationCode(to=email, code=ncode)
                 data = {
                     'ID' : 9,
                     'Message':'Invalide Code, new verification code sent'
@@ -238,7 +247,7 @@ while not CLOSE:
         #rec = conn.recv(1024).decode()
         rec = conn.recv(2048)
         data = pickle.loads(rec)
-        if data[ID] == 5:
+        if data['ID'] == 5:
             #conn.send("Connected".encode())
             thread = threading.Thread(target=handle_client, args=(conn,data,))
             THREADS.append({'conn': conn,'Thread':thread})
