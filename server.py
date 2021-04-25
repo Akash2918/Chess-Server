@@ -258,7 +258,7 @@ while not CLOSE:
         elif data['ID'] == 700:
             #conn.send("Connected".encode())
             thread1 = threading.Thread(target=Register_Client, args=(conn, rdata))
-            THREADS.append({'Thread':thread1, 'conn':conn)
+            THREADS.append({'Thread':thread1, 'conn':conn})
             thread1.start()
         # elif rec == 'ForgotPassword':
         #     conn.send("Connected".encode())

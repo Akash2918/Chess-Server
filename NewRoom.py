@@ -18,6 +18,8 @@ class Room(object):
         self.lost = None
         self.game_end = False
         self.thread = threading.Thread(target=self.broadcast_messages)
+        with open('./Rooms/{}.csv'.format(self.RoomID), 'w') as f:
+            pass                                       ##Update it
         self.moveno = None
         self.move = None
         self.white = None
@@ -70,8 +72,8 @@ class Room(object):
         print("Turns are set")
         return
     
-    def write_to_file(self, moveno, uid, move):
-        self.fdata.write('{}\t{}\t{}\n'.format(moveno, uid, move))
+    def write_to_file(self, moveno, uid, start, stop):
+        self.fdata.write('{}\t{}\t{}\t{}\n'.format(moveno, uid, start, stop))
         return
 
     def read_from_file(self,):
@@ -88,7 +90,10 @@ class Room(object):
                 uid = message['UserID']
                 if message['ID'] == 60:
                     moveno = message['MoveNo']
-                    move = message['Move']
+                    start = message['Start']
+                    stop = message['Stop']
+                    self.write_to_file(moveno, uid, start, stop)
+                    print("Written to file")
 
                 data = pickle.dumps(message)
                 for user in self.spectators:
