@@ -324,8 +324,8 @@ class Client(object):
                         'UserID':self._userid
                     }
                     user2 = {
-                        'conn' = c['conn'],
-                        'UserID' = fid,
+                        'conn' : c['conn'],
+                        'UserID' : fid,
                     }
                     
                     playroom = Room(roomid=roomid, user1=user1, user2=user2, db = self.db, rooms=self.Rooms)
@@ -364,6 +364,9 @@ class Client(object):
                     print("Thread joined and logout successful")
                     LOGOUT = True
                     sys.exit()
+                
+                elif id == 70:
+                    print("Keep Alive message From {}".format(self._userid))
 
                 else:
                     print("Data : {}".format(data))

@@ -3,6 +3,7 @@ import threading
 from database import Database
 import pickle
 from User import Client
+import sys
 import random
 import smtplib
 from email.message import EmailMessage
@@ -101,7 +102,9 @@ def handle_client(conn, data):
                 }
                 data = pickle.dumps(data)
                 conn.send(data)
-                #return
+                Exit = True
+                sys.exit()
+                return
         elif id == 6:           ##Forgot password
             email = data['Email']
             uid = data['UserID']
@@ -173,8 +176,8 @@ def Register_Client(conn, rdata):
     Variefy = False
     while not Variefy:
         print("Inside the loop register")
-        #rev = conn.recv(1024)
-        #data = pickle.loads(rev)
+        rev = conn.recv(1024)
+        rdata = pickle.loads(rev)
         id = rdata['ID']
         if id == 1:
             uid = rdata['UserID']
@@ -211,11 +214,11 @@ def Register_Client(conn, rdata):
             
             data = pickle.dumps(data)
             conn.send(data)
-            rev = sock.recv(2048)
-            rdata = pickle.dumps(rev)
+            #rev = sock.recv(2048)
+            #rdata = pickle.dumps(rev)
             Exit = True
         elif id == 2:
-            revcode = data['Code']
+            revcode = rdata['Code']
             print("Recieved code is {}".format(revcode))
             if revcode == code:
                 Variefy = True
@@ -252,10 +255,10 @@ while not CLOSE:
             thread = threading.Thread(target=handle_client, args=(conn,data,))
             THREADS.append({'conn': conn,'Thread':thread})
             thread.start()
-        elif data['ID'] == 1:
+        elif data['ID'] == 700:
             #conn.send("Connected".encode())
-            thread1 = threading.Thread(target=Register_Client, args=(conn, ))
-            THREADS.append(thread1)
+            thread1 = threading.Thread(target=Register_Client, args=(conn, rdata))
+            THREADS.append({'Thread':thread1, 'conn':conn)
             thread1.start()
         # elif rec == 'ForgotPassword':
         #     conn.send("Connected".encode())

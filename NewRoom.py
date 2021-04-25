@@ -18,12 +18,12 @@ class Room(object):
         self.lost = None
         self.game_end = False
         self.thread = threading.Thread(target=self.broadcast_messages)
-         self.moveno = None
+        self.moveno = None
         self.move = None
         self.white = None
         self.black = None
         self.fdata = open('./Rooms/{}.csv'.format(self.RoomID), 'r+')
-        self.set_turns()
+        #self.set_turns()
         
 
 
@@ -111,6 +111,7 @@ class Room(object):
         print("User 2 {}".format(self.User2))
         print("conn 1 {}".format(self.conn1))
         print("conn 2 {}".format(self.conn2))
+        self.set_turns()
         self.thread.start()
         print("Returning from start")
         return
