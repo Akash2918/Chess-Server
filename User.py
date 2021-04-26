@@ -3,7 +3,7 @@ import pickle
 from NewRoom import Room
 import time
 import random
-import struct
+import threading
 import sys
 
 class Client(object):
@@ -23,6 +23,7 @@ class Client(object):
         self.lock = lock
         self.request = False
         self.cancel = False
+        self.thread = None
 
     def start(self):
         LOGOUT = False
@@ -305,8 +306,11 @@ class Client(object):
                         # continue
                     elif id == 56:                          ###Quick play message
                         self.quickplay.append({'UserID':self._userid, 'conn':self.conn})
+                        self.thread = threading.Thread(target=self.get_opponent)
+                        self.thread.start()
                         while not self.cancel:
                             if self.request:
+                                self.thread.join()
                                 break
                             else:
                                 continue
@@ -341,7 +345,8 @@ class Client(object):
 
                     elif id == 59:
                         self.cancel = True
-
+                        self.quickplay.remove({'UserID':self._userid, 'conn':self.conn})
+                        self.thread.join()
 
                     elif id == 60:                          ##Board messages
                         self.room.board_messages.append(data)
@@ -374,7 +379,7 @@ class Client(object):
                         continue
                 else:
                     continue
-            except (ConnectionResetError, KeyboardInterrupt):
+            except (ConnectionResetError, KeyboardInterrupt, BrokenPipeError):
                 return
         return
 
