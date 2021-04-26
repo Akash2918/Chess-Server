@@ -271,6 +271,8 @@ while not CLOSE:
         CLOSE = True
         print('')
         print("Server is closed")
+    except ConnectionRefusedError:
+        continue
     except:
         continue
 

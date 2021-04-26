@@ -44,335 +44,338 @@ class Client(object):
         sdata = pickle.dumps(data)
         self.conn.send(sdata)
         while not LOGOUT:
-            rec = self.conn.recv(2048)
-            if rec :
-                data = pickle.loads(rec)
-                print("The test data ", data)
-                id = data['ID']
-                if id == 20:                #sending requst to the friend with friendid for playing
-                    friendId = data['FriendID']
-                    req = {
-                            'ID' : 50,
-                            'Sender': self._userid,
-                            'Reciever': friendId,
-                            'Message': 'Friend request from user to play chess'
-                        }
-                    reqdata = pickle.dumps(req)
-                    for u in self.Users:
-                        if friendId == u['UserID']:
-                            client = u['Client']
-                            cconn = u['conn']
-                            cconn.send(reqdata)
-                            print("Message sent")
-                            break
-                        else:
-                            continue
-                    # if client:
-                    #     req = {
-                    #         'ID' : 50,
-                    #         'Sender': self._userid,
-                    #         'Reciever': friendId,
-                    #         'Message': 'Friend request from user to play chess'
-                    #     }
-                    #     reqdata = pickle.dumps(req)
-                    #     client.conn.send(reqdata)
-                    #     print("Message sent")
-                    # else:
-                    #     continue
-                
-                elif id == 24:                  ##Check existance of user
-                    fid = data['FriendID']
-                    data = self.db.check_existance_of_user(fid)
-                    if data:
-                        rev = {
-                            'ID':24,
-                            'Data': data,
-                            'Status': True
-                        }
-                        self.conn.send(pickle.dumps(rev))
-                    else:
-                        res = {
-                            'ID': 7,
-                            'Message': "No user with given ID",
-                            'Status': False 
-                        }
-                        res = pickle.dumps(res)
-                        self.conn.send(res)
-
-                elif id == 25:              ##Sending friend request status => request accept or reject normal request
-                    uid = data['UserID']
-                    fid = data['FriendID']
-                    if self.db.add_new_friend_request(uid, fid):
-                        res = {
-                            'ID': 25,
-                            'Message': 'Request added successfully'
-                        }
-                        for usr in self.Users:
-                            if usr['UserID'] == fid:
-                                fconn = usr['conn']
-                                fdata = {
-                                    'ID':27,                    ##Send online friend request
-                                    'UserID':fid,
-                                    'FriendID':uid,
-                                    'Message':"Friend request sent by friend"
-                                }
-                                fdata = pickle.dumps(fdata)
-                                fconn.send(fdata)
+            try:
+                rec = self.conn.recv(2048)
+                if rec :
+                    data = pickle.loads(rec)
+                    print("The test data ", data)
+                    id = data['ID']
+                    if id == 20:                #sending requst to the friend with friendid for playing
+                        friendId = data['FriendID']
+                        req = {
+                                'ID' : 50,
+                                'Sender': self._userid,
+                                'Reciever': friendId,
+                                'Message': 'Friend request from user to play chess'
+                            }
+                        reqdata = pickle.dumps(req)
+                        for u in self.Users:
+                            if friendId == u['UserID']:
+                                client = u['Client']
+                                cconn = u['conn']
+                                cconn.send(reqdata)
+                                print("Message sent")
                                 break
                             else:
                                 continue
-                        
-                    else:
-                        res = {
-                            'ID': 7,
-                            'Message': "Error While processing data" 
-                        }
-                    res = pickle.dumps(res)
-                    self.conn.send(res)
-                
-                elif id == 26:                  ##Accept or reject the friend request
-                    fid = data['FriendID']
-                    self.db.add_friends_request_status(data)
+                        # if client:
+                        #     req = {
+                        #         'ID' : 50,
+                        #         'Sender': self._userid,
+                        #         'Reciever': friendId,
+                        #         'Message': 'Friend request from user to play chess'
+                        #     }
+                        #     reqdata = pickle.dumps(req)
+                        #     client.conn.send(reqdata)
+                        #     print("Message sent")
+                        # else:
+                        #     continue
+                    
+                    elif id == 24:                  ##Check existance of user
+                        fid = data['FriendID']
+                        data = self.db.check_existance_of_user(fid)
+                        if data:
+                            rev = {
+                                'ID':24,
+                                'Data': data,
+                                'Status': True
+                            }
+                            self.conn.send(pickle.dumps(rev))
+                        else:
+                            res = {
+                                'ID': 7,
+                                'Message': "No user with given ID",
+                                'Status': False 
+                            }
+                            res = pickle.dumps(res)
+                            self.conn.send(res)
 
-                elif id == 28:              #delete friend from friend list
-                    friendID = data['FriendID']
-                    if self.db.remove_friend_from_friendlist(self._userid, friendID):
-                        data = {
-                            'ID':28,
-                            'Message':'Friend deleted from friend list'
-                        }
-                    else:
-                        data = {
-                            'ID' : 7,
-                            'Message': "Error while deleting friend"
-                        }
-                    data = pickle.dumps(data)
-                    self.conn.send(data)
+                    elif id == 25:              ##Sending friend request status => request accept or reject normal request
+                        uid = data['UserID']
+                        fid = data['FriendID']
+                        if self.db.add_new_friend_request(uid, fid):
+                            res = {
+                                'ID': 25,
+                                'Message': 'Request added successfully'
+                            }
+                            for usr in self.Users:
+                                if usr['UserID'] == fid:
+                                    fconn = usr['conn']
+                                    fdata = {
+                                        'ID':27,                    ##Send online friend request
+                                        'UserID':fid,
+                                        'FriendID':uid,
+                                        'Message':"Friend request sent by friend"
+                                    }
+                                    fdata = pickle.dumps(fdata)
+                                    fconn.send(fdata)
+                                    break
+                                else:
+                                    continue
+                            
+                        else:
+                            res = {
+                                'ID': 7,
+                                'Message': "Error While processing data" 
+                            }
+                        res = pickle.dumps(res)
+                        self.conn.send(res)
+                    
+                    elif id == 26:                  ##Accept or reject the friend request
+                        fid = data['FriendID']
+                        self.db.add_friends_request_status(data)
+
+                    elif id == 28:              #delete friend from friend list
+                        friendID = data['FriendID']
+                        if self.db.remove_friend_from_friendlist(self._userid, friendID):
+                            data = {
+                                'ID':28,
+                                'Message':'Friend deleted from friend list'
+                            }
+                        else:
+                            data = {
+                                'ID' : 7,
+                                'Message': "Error while deleting friend"
+                            }
+                        data = pickle.dumps(data)
+                        self.conn.send(data)
 
 
-                elif id == 30:              ## Sending chat messages includes self uid room_id
-                    #self.room.chat_messages.append(data)
-                    #self.room.board_messaes.append(data)
-                    print("The recieved mesage is {}".format(data))
-                    room = data['RoomID']
-                    chatroom = None
-                    for croom in self.Rooms:
-                        if croom['RoomID'] == room:
-                            chatroom = croom['Room']
-                            break
-                    #chatroom.chat_messages.append(data)
-                    chatroom.board_messages.append(data)
-                    #chatroom.board_messages.append(data)
-                    # continue
-                
-                elif id == 31:
-                    print("Board message recieved")
-                    print(data)
-                    room = data['RoomID']
-                    boardroom = None
-                    for broom in self.Rooms:
-                        if broom['RoomID'] == room:
-                            boardroom = broom['Room']
-                            break
-                    boardroom.board_messages.append(data)
-
-                elif id == 35:              ## Sending spectete message includes self uid room_id
-                    roomid = data['RoomID']
-                    if self.room == None:
-                        for room in self.Rooms:
-                            if roomid == room['RoomID']:
-                                self.room = room['Room']
+                    elif id == 30:              ## Sending chat messages includes self uid room_id
+                        #self.room.chat_messages.append(data)
+                        #self.room.board_messaes.append(data)
+                        print("The recieved mesage is {}".format(data))
+                        room = data['RoomID']
+                        chatroom = None
+                        for croom in self.Rooms:
+                            if croom['RoomID'] == room:
+                                chatroom = croom['Room']
                                 break
-                        newuser = {
-                            'UserID': self._userid,
-                            'conn' : self.conn,
-                        }
-                        self.room.spectators.append(newuser)
-                        self.spectating = True
+                        #chatroom.chat_messages.append(data)
+                        chatroom.board_messages.append(data)
+                        #chatroom.board_messages.append(data)
+                        # continue
+                    
+                    elif id == 31:
+                        print("Board message recieved")
+                        print(data)
+                        room = data['RoomID']
+                        boardroom = None
+                        for broom in self.Rooms:
+                            if broom['RoomID'] == room:
+                                boardroom = broom['Room']
+                                break
+                        boardroom.board_messages.append(data)
+
+                    elif id == 35:              ## Sending spectete message includes self uid room_id
+                        roomid = data['RoomID']
+                        if self.room == None:
+                            for room in self.Rooms:
+                                if roomid == room['RoomID']:
+                                    self.room = room['Room']
+                                    break
+                            newuser = {
+                                'UserID': self._userid,
+                                'conn' : self.conn,
+                            }
+                            self.room.spectators.append(newuser)
+                            self.spectating = True
+                            res = {
+                                'ID': 35,
+                                'Message': "You have been added to the spectators list"
+                            }
+                            data = pickle.dumps(res)
+                            self.conn.send(data)
+                            move_log = self.room.read_from_file()
+                            res = {
+                                'ID': 450,
+                                'MoveLog': move_log
+                            }
+                            data = pickle.dumps(res)
+                            self.conn.send(data)
+                        else:
+                            
+                            res = {
+                                'ID': 7,
+                                'Message': "Room with given ID does not exist" 
+                            }
+                            res = pickle.dumps(res)
+                            self.conn.send(res)    
+
+                    elif id == 40:              ## Get user profile
+                        profile = self.db.get_profile(self._userid)
                         res = {
-                            'ID': 35,
-                            'Message': "You have been added to the spectators list"
-                        }
-                        data = pickle.dumps(res)
-                        self.conn.send(data)
-                        move_log = self.room.read_from_file()
-                        res = {
-                            'ID': 450,
-                            'MoveLog': move_log
-                        }
-                        data = pickle.dumps(res)
-                        self.conn.send(data)
-                    else:
-                        
-                        res = {
-                            'ID': 7,
-                            'Message': "Room with given ID does not exist" 
+                            'ID': 40,
+                            'Profile': profile,
+                            'Message': 'User Profile'
                         }
                         res = pickle.dumps(res)
-                        self.conn.send(res)    
+                        self.conn.send(res)
+                    
+                    elif id == 41:      ##Update User Profile
+                        self.imgbuf += data['Image']
+                        self.piece_no = data['Piece_No']
+                        self.pieces = data['Pieces']
+                        print("{} recieved ".format(self.piece_no))
 
-                elif id == 40:              ## Get user profile
-                    profile = self.db.get_profile(self._userid)
-                    res = {
-                        'ID': 40,
-                        'Profile': profile,
-                        'Message': 'User Profile'
-                    }
-                    res = pickle.dumps(res)
-                    self.conn.send(res)
-                
-                elif id == 41:      ##Update User Profile
-                    self.imgbuf += data['Image']
-                    self.piece_no = data['Piece_No']
-                    self.pieces = data['Pieces']
-                    print("{} recieved ".format(self.piece_no))
-
-                    # if self.db.update_user_profile(self._userid, data):
-                    #     data = {
-                    #         'ID':41,
-                    #         'Message': 'User profile updated successfully'
-                    #     }
-                    # else:
-                    #     data = {
-                    #         'ID': 7,
-                    #         'Message': 'Failed to update user profile'
-                    #     }
-                    # rev = pickle.dumps(data)
-                    # self.conn.send(rev)
-                        
-                elif id == 45:              ## Friend request from friend to play chess
-                    req = {
-                        'ID': 50,
-                        'Sender': data['Sender'],
-                        'Message': 'Friend request from {}'.format(data['Sender'])
-                    }
-                    reqdata = pickle.dumps(req)
-                    self.conn.send(reqdata)
-                
-                elif id == 55:              ## Game play request accept or reject
-                    status = data['Status']
-                    if status == 'Accepted':
-                        roomid = self.generate_roomid()
-                        self.playing = True
-                        user1 = {
-                            'UserID': self._userid,
-                            'Conn': self.conn
+                        # if self.db.update_user_profile(self._userid, data):
+                        #     data = {
+                        #         'ID':41,
+                        #         'Message': 'User profile updated successfully'
+                        #     }
+                        # else:
+                        #     data = {
+                        #         'ID': 7,
+                        #         'Message': 'Failed to update user profile'
+                        #     }
+                        # rev = pickle.dumps(data)
+                        # self.conn.send(rev)
+                            
+                    elif id == 45:              ## Friend request from friend to play chess
+                        req = {
+                            'ID': 50,
+                            'Sender': data['Sender'],
+                            'Message': 'Friend request from {}'.format(data['Sender'])
                         }
-                        
-                        
-                        for client in self.Users:
-                            if data['FriendID'] == client['UserID']:
-                                c = client
+                        reqdata = pickle.dumps(req)
+                        self.conn.send(reqdata)
+                    
+                    elif id == 55:              ## Game play request accept or reject
+                        status = data['Status']
+                        if status == 'Accepted':
+                            roomid = self.generate_roomid()
+                            self.playing = True
+                            user1 = {
+                                'UserID': self._userid,
+                                'Conn': self.conn
+                            }
+                            
+                            
+                            for client in self.Users:
+                                if data['FriendID'] == client['UserID']:
+                                    c = client
+                                    break
+                            clientconn = c['conn']
+                            user2 = {
+                                'UserID': c['UserID'],
+                                'Conn': clientconn
+                            }
+                            playroom = Room(roomid, user1, user2, db = self.db, rooms=self.Rooms)
+                            nrec = {
+                                'ID' : 55,
+                                'Sender' : data['FriendID'],
+                                'Reciever': self._userid,
+                                'Message': "Friend request accepted",
+                                'Status': status,
+                                'RoomID': roomid,
+                                #'Room' : playroom
+                            }
+                            clientconn.send(pickle.dumps(nrec))
+                            newroom = {
+                                'Room': playroom,
+                                'RoomID': roomid,
+                            }
+                            self.Rooms.append(newroom)
+                            self.room = playroom
+                            c['Client'].room = playroom
+                            print(bool(self.room))
+                            self.room.start()
+                            #playroom.start()
+                            #self.room = playroom
+                        else :
+                            rec = {
+                                'ID' : 55,
+                                'Sender' : self._userid,#data['FriendID'],
+                                'Reciever': data['FriendID'], #self._userid,
+                                'Message': "Friend request rejected",
+                                'Status': status
+                            }
+                            srec = pickle.dumps(rec)
+                            self.conn.send(srec)
+                        # continue
+                    elif id == 56:                          ###Quick play message
+                        self.quickplay.append({'UserID':self._userid, 'conn':self.conn})
+                        while not self.cancel:
+                            if self.request:
                                 break
-                        clientconn = c['conn']
+                            else:
+                                continue
+                    elif id == 58:                  ##Quick play room creating
+                        uid = data['UserID']
+                        fid = data['FriendID']
+                        for usr in self.Users:
+                            if usr['UserID'] == fid:
+                                c = usr
+                                break
+                        c['Client'].playing = True
+                        self.playing = True
+                        roomid = self.generate_roomid()
+                        user1 = {
+                            'conn':self.conn,
+                            'UserID':self._userid
+                        }
                         user2 = {
-                            'UserID': c['UserID'],
-                            'Conn': clientconn
+                            'conn' : c['conn'],
+                            'UserID' : fid,
                         }
-                        playroom = Room(roomid, user1, user2, db = self.db, rooms=self.Rooms)
-                        nrec = {
-                            'ID' : 55,
-                            'Sender' : data['FriendID'],
-                            'Reciever': self._userid,
-                            'Message': "Friend request accepted",
-                            'Status': status,
-                            'RoomID': roomid,
-                            #'Room' : playroom
-                        }
-                        clientconn.send(pickle.dumps(nrec))
-                        newroom = {
-                            'Room': playroom,
-                            'RoomID': roomid,
-                        }
-                        self.Rooms.append(newroom)
+                        
+                        playroom = Room(roomid=roomid, user1=user1, user2=user2, db = self.db, rooms=self.Rooms)
                         self.room = playroom
                         c['Client'].room = playroom
-                        print(bool(self.room))
+                        aroom = {
+                            'Room':playroom,
+                            'RoomID':roomid
+                        }
+                        self.Rooms.append(aroom)
                         self.room.start()
-                        #playroom.start()
-                        #self.room = playroom
-                    else :
-                        rec = {
-                            'ID' : 55,
-                            'Sender' : self._userid,#data['FriendID'],
-                            'Reciever': data['FriendID'], #self._userid,
-                            'Message': "Friend request rejected",
-                            'Status': status
-                        }
-                        srec = pickle.dumps(rec)
-                        self.conn.send(srec)
-                    # continue
-                elif id == 56:                          ###Quick play message
-                    self.quickplay.append({'UserID':self._userid, 'conn':self.conn})
-                    while not self.cancel:
-                        if self.request:
-                            break
-                        else:
-                            continue
-                elif id == 58:                  ##Quick play room creating
-                    uid = data['UserID']
-                    fid = data['FriendID']
-                    for usr in self.Users:
-                        if usr['UserID'] == fid:
-                            c = usr
-                            break
-                    c['Client'].playing = True
-                    self.playing = True
-                    roomid = self.generate_roomid()
-                    user1 = {
-                        'conn':self.conn,
-                        'UserID':self._userid
-                    }
-                    user2 = {
-                        'conn' : c['conn'],
-                        'UserID' : fid,
-                    }
+
+                    elif id == 59:
+                        self.cancel = True
+
+
+                    elif id == 60:                          ##Board messages
+                        self.room.board_messages.append(data)
+                    elif id == 65:                          #LOGOUT
+                        print("Recieved logout message from {}".format(self._userid))
+                        if self.playing:
+                            res = {
+                                'ID': 7,
+                                'Message': "You cannot logout while playing" 
+                            }
+                        elif self.spectating:
+                            newuser = {
+                                'UserID': self._userid,
+                                'conn' : self.conn,
+                            }
+                            try:
+                                self.room.spectators.remove(newuser)
+                            except:
+                                print("Error while removing spectator from list")
+                        self.get_online_friends(friends, False)
+                        print("Thread joined and logout successful")
+                        LOGOUT = True
+                        sys.exit()
                     
-                    playroom = Room(roomid=roomid, user1=user1, user2=user2, db = self.db, rooms=self.Rooms)
-                    self.room = playroom
-                    c['Client'].room = playroom
-                    aroom = {
-                        'Room':playroom,
-                        'RoomID':roomid
-                    }
-                    self.Rooms.append(aroom)
-                    self.room.start()
+                    elif id == 70:
+                        print("Keep Alive message From {}".format(self._userid))
 
-                elif id == 59:
-                    self.cancel = True
-
-
-                elif id == 60:                          ##Board messages
-                    self.room.board_messages.append(data)
-                elif id == 65:                          #LOGOUT
-                    print("Recieved logout message from {}".format(self._userid))
-                    if self.playing:
-                        res = {
-                            'ID': 7,
-                            'Message': "You cannot logout while playing" 
-                        }
-                    elif self.spectating:
-                        newuser = {
-                            'UserID': self._userid,
-                            'conn' : self.conn,
-                        }
-                        try:
-                            self.room.spectators.remove(newuser)
-                        except:
-                            print("Error while removing spectator from list")
-                    self.get_online_friends(friends, False)
-                    print("Thread joined and logout successful")
-                    LOGOUT = True
-                    sys.exit()
-                
-                elif id == 70:
-                    print("Keep Alive message From {}".format(self._userid))
-
+                    else:
+                        print("Data : {}".format(data))
+                        continue
                 else:
-                    print("Data : {}".format(data))
                     continue
-            else:
-                continue
+            except (ConnectionResetError, KeyboardInterrupt):
+                return
         return
 
 

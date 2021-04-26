@@ -24,7 +24,7 @@ class Room(object):
         self.move = None
         self.white = None
         self.black = None
-        self.fdata = open('./Rooms/{}.csv'.format(self.RoomID), 'r+')
+        self.fdata = open('./Rooms/{}.csv'.format(self.RoomID), 'w+')
         #self.set_turns()
         
 
