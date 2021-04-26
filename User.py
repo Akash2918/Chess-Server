@@ -347,7 +347,7 @@ class Client(object):
                     elif id == 59:
                         self.cancel = True
                         self.timeout = True
-                        self.quickplay.remove({'UserID':self._userid, 'conn':self.conn})
+                        #self.quickplay.remove({'UserID':self._userid, 'conn':self.conn})
                         self.thread.join()
 
                     elif id == 60:                          ##Board messages
