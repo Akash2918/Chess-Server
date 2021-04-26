@@ -24,6 +24,7 @@ class Client(object):
         self.request = False
         self.cancel = False
         self.thread = None
+        self.timeout = False
 
     def start(self):
         LOGOUT = False
@@ -345,6 +346,7 @@ class Client(object):
 
                     elif id == 59:
                         self.cancel = True
+                        self.timeout = True
                         self.quickplay.remove({'UserID':self._userid, 'conn':self.conn})
                         self.thread.join()
 
@@ -465,44 +467,46 @@ class Client(object):
                 continue
         self.lock = True
         self.quickplay.remove({'UserID':self._userid, 'conn': self.conn})
-        if len(self.quickplay) > 1:
-            opponent = self.quickplay.pop()
-            self.lock = False
-            opp_uid = opponent['UserID']
-            for usr in self.Users:
-                if usr['UserID'] == opp_uid:
-                    opp_usr = usr
-                    break
-            if opp_usr:
-                opp_client = opp_usr['Client']
-                opp_client.request = True
-            data = {
-                'ID':56,
-                'FriendID': opp_uid,
-                'UserID': self._userid,
-                'Message': "Quick play request matched with given friendid"
-            }
-            rev = pickle.dumps(data)
-            self.conn.send(rev)
-            opp_conn = opponent['conn']
-            data = {
-                'ID':57,
-                'FriendID':self._userid,
-                'UserID':opp_uid,
-                'Message':"Quick play request matched with given FriendID wait for 2200"
-            }
-            rev = pickle.dumps(data)
-            opp_conn.send(rev)
-        else:
-            data = {
-                'ID':400,
-                'UserID':self._userid,
-                'Message': 'Opponent not exist'
-            }
-            rev = pickle.dumps(data)
-            self.conn.send(rev)
-            self.cancel = True
-            self.quickplay.remove({'UserID':self._userid, 'conn': self.conn})
-            return
+        self.timeout = False
+        while not timeout:
+            if len(self.quickplay) > 1:
+                opponent = self.quickplay.pop()
+                self.lock = False
+                opp_uid = opponent['UserID']
+                for usr in self.Users:
+                    if usr['UserID'] == opp_uid:
+                        opp_usr = usr
+                        break
+                if opp_usr:
+                    opp_client = opp_usr['Client']
+                    opp_client.request = True
+                data = {
+                    'ID':56,
+                    'FriendID': opp_uid,
+                    'UserID': self._userid,
+                    'Message': "Quick play request matched with given friendid"
+                }
+                rev = pickle.dumps(data)
+                self.conn.send(rev)
+                opp_conn = opponent['conn']
+                data = {
+                    'ID':57,
+                    'FriendID':self._userid,
+                    'UserID':opp_uid,
+                    'Message':"Quick play request matched with given FriendID wait for 2200"
+                }
+                rev = pickle.dumps(data)
+                opp_conn.send(rev)
+            else :
+                continue
+        # data = {
+        #     'ID':400,
+        #     'UserID':self._userid,
+        #     'Message': 'Opponent not exist'
+        # }
+        #rev = pickle.dumps(data)
+        #self.conn.send(rev)
+        self.cancel = True
+        self.quickplay.remove({'UserID':self._userid, 'conn': self.conn})
         self.cancel = True
         return
