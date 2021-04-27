@@ -25,10 +25,12 @@ class Client(object):
         self.cancel = False
         self.thread = None
         self.timeout = False
+        self.friends = None
 
     def start(self):
         LOGOUT = False
         friends = self.db.get_friends_list(self._userid)
+        self.friends = friends
         friends_requests = self.db.get_friends_request_list(self._userid)
         friends_rejected = self.db.get_friends_rejected_list(self._userid)
         online_friends = self.get_online_friends(friends, True)
@@ -330,11 +332,11 @@ class Client(object):
                         self.playing = True
                         roomid = self.generate_roomid()
                         user1 = {
-                            'conn':self.conn,
+                            'Conn':self.conn,
                             'UserID':self._userid
                         }
                         user2 = {
-                            'conn' : c['conn'],
+                            'Conn' : c['conn'],
                             'UserID' : fid,
                         }
                         
@@ -345,6 +347,8 @@ class Client(object):
                             'Room':playroom,
                             'RoomID':roomid
                         }
+                        self.send_busy_message()
+                        c['Client'].send_busy_message()
                         self.Rooms.append(aroom)
                         self.room.start()
 
@@ -352,7 +356,10 @@ class Client(object):
                         self.cancel = True
                         self.timeout = True
                         #self.quickplay.remove({'UserID':self._userid, 'conn':self.conn})
-                        self.thread.join()
+                        try:
+                            self.thread.join()
+                        except:
+                            pass
 
                     elif id == 60:                          ##Board messages
                         self.room.board_messages.append(data)
@@ -462,6 +469,23 @@ class Client(object):
                 continue
         
         return set(rooms)
+    
+    def send_busy_message(self):
+        for usr in self.Users:
+            if usr['UserID'] in self.friends:
+                data = {
+                    'ID':13,
+                    'UserID': usr['UserID'],
+                    'FriendID':self._userid,
+                    'Message': "Friend is busy"
+                }
+                conn = usr['conn']
+                rev = pickle.dumps(data)
+                conn.send(rev)
+            else:
+                continue
+        return
+
 
     # def get_opponent(self):
     #     print("Inside get_opponent")
@@ -535,7 +559,7 @@ class Client(object):
                     'ID':57,
                     'UserID':opponent['UserID'],
                     'FriendID':self._userid,
-                    'Message':"Quick play request matched with given friendID"
+                    'Message':"Quick play request matched with given friendID wait for 2200 message"
                 }
                 rec1 = pickle.dumps(data1)
                 rec2 = pickle.dumps(data2)

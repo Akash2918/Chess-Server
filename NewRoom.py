@@ -18,7 +18,7 @@ class Room(object):
         self.lost = None
         self.game_end = False
         self.thread = threading.Thread(target=self.broadcast_messages)
-        with open('./Rooms/{}.csv'.format(self.RoomID), 'w') as f:
+        with open('./Rooms/{}.csv'.format(self.RoomID), 'a') as f:
             pass                                       ##Update it
         self.moveno = None
         self.move = None
@@ -66,24 +66,26 @@ class Room(object):
         res2 = pickle.dumps(data2)
         self.conn1.send(res1)
         self.conn2.send(res2)
-        self.fdata.write("UserID\tColor\n")
-        self.fdata.write("{}\t{}\n".format(self.black[0],self.black[1]))
-        self.fdata.write("{}\t{}\n".format(self.white[0],self.white[1]))
+        with open('./Rooms/{}.csv'.format(self.RoomID), 'a') as fdata:
+            fdata.write("UserID\tColor\n")
+            fdata.write("{}\t{}\n".format(self.black[0],self.black[1]))
+            fdata.write("{}\t{}\n".format(self.white[0],self.white[1]))
         print("Turns are set")
         return
     
     def write_to_file(self, moveno, uid, start, stop):
-        with open('./Rooms/{}.csv'.format(self.RoomID), 'w') as fdata:
+        with open('./Rooms/{}.csv'.format(self.RoomID), 'a') as fdata:
             fdata.write('{}\t{}\t{}\t{}\n'.format(moveno, uid, start, stop))
         return
 
     def read_from_file(self,):
-        with open("./Rooms/{}.csv".format) as fdata:
+        with open("./Rooms/{}.csv".format(self.RoomID), 'r') as fdata:
             data = fdata.read()
         return data
 
     def broadcast_messages(self):
-        self.fdata.write("Moveno\tUserID\tMove\n")
+        with open('./Rooms/{}.csv'.format(self.RoomID), 'a') as fdata:
+            fdata.write("Moveno\tUserID\tMove\n")
         while not self.game_end:
             if len(self.board_messages) > 0:
                 print("The messages list contain {}".format(self.board_messages))
