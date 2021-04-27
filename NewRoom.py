@@ -85,13 +85,14 @@ class Room(object):
 
     def broadcast_messages(self):
         with open('./Rooms/{}.csv'.format(self.RoomID), 'a') as fdata:
-            fdata.write("Moveno\tUserID\tMove\n")
+            fdata.write("Moveno\tUserID\tStart\tStop\n")
         while not self.game_end:
             if len(self.board_messages) > 0:
                 print("The messages list contain {}".format(self.board_messages))
                 message = self.board_messages.pop()
                 print(message)
                 uid = message['UserID']
+                self.game_end = message['Checkmate']
                 if message['ID'] == 60:
                     moveno = message['MoveNo']
                     start = message['Start']

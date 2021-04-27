@@ -48,6 +48,7 @@ class Database(object):
         self._existance_friend_query = ("select UserID from Clients where UserID = %s")
         self._existance_of_friend_query = ("select * from Friends where UserID = %s and FriendID = %s")          
         self._delete_friend_query = ("delete from Friends where UserID = %s and FriendID = %s")
+        self._get_email_of_client = ("select Email from Clients where UserID = %s")
 
     def update_user_profile(self, uid, data):
         try:
@@ -57,6 +58,17 @@ class Database(object):
         except:
             return False
     
+    def get_emailid(self, uid):
+        try:
+            self.cursor.execute(self._get_email_of_client, (uid, ))
+            data = []
+            for d in self.cursor:
+                data.append(d[0])
+            
+            return data
+        except:
+            return []
+
     def remove_friend_from_friendlist(self, uid, fid):
         data = []
         self.cursor.execute(self._existance_of_friend_query, (uid, fid, ))

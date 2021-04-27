@@ -106,12 +106,25 @@ def handle_client(conn, data):
                 sys.exit()
                 return
         elif id == 6:           ##Forgot password
-            email = data['Email']
+            #email = data['Email']
             uid = data['UserID']
-            
-            ncode = random_number()
-            Send_VerificationCode(to=email, uid=uid, code=ncode)
-
+            email = DB.get_emailid(uid=uid)
+            if email:
+                print(email)
+                ncode = random_number()
+                Send_VerificationCode(to=email, uid=uid, code=ncode)
+                data = {
+                    'ID':6,
+                    'Message':"User Exist",
+                    'Status':True
+                }
+            else:
+                data = {
+                    'ID':6,
+                    'Status':False,
+                    'Message':"User does not exist"
+                }
+            conn.send(pickle.dumps(data))
         elif id == 2:
             revcode = data['Code']
             if revcode == code:
@@ -127,13 +140,13 @@ def handle_client(conn, data):
                         'ID' : 7,
                         'Message' : 'Password update unsuccessful'
                     }
-                
+                Exit = True
             else:
-                ncode = random_number()
-                Send_VerificationCode(to=email, code=ncode)
+                #ncode = random_number()
+                #Send_VerificationCode(to=email, code=ncode)
                 data = {
                     'ID' : 9,
-                    'Message':'Invalide Code, new verification code sent'
+                    'Message':'Invalide Code,'
                 }
                 
             data = pickle.dumps(data)
@@ -250,7 +263,7 @@ while not CLOSE:
         #rec = conn.recv(1024).decode()
         rec = conn.recv(2048)
         data = pickle.loads(rec)
-        if data['ID'] == 5:
+        if data['ID'] == 5 or data['ID'] == 6:
             #conn.send("Connected".encode())
             thread = threading.Thread(target=handle_client, args=(conn,data,))
             THREADS.append({'conn': conn,'Thread':thread})
