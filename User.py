@@ -316,8 +316,8 @@ class Client(object):
                         #     else:
                         #         continue
                         self.message_queue.append({"UserID":self._userid, 'conn':self.conn})
-                        thread = threading.Thread(target=self.get_connections)
-                        thread.start()
+                        self.thread = threading.Thread(target=self.get_connections)
+                        self.thread.start()
                         print("Thread started for getting connections")
                     elif id == 58:                  ##Quick play room creating
                         uid = data['UserID']
@@ -522,9 +522,26 @@ class Client(object):
     def get_connections(self):
         while not self.cancel:
             if len(self.quickplay) >=2:
-                player = self.quickplay.pop()
                 opponent = self.quickplay.pop()
+                player = self.quickplay.pop()
                 print("Player {} and opponent = {}".format(player, opponent))
+                data1 = {
+                    'ID':56,
+                    'UserID':self._userid,
+                    'FriendID':opponent['UserID']
+                    'Message':"Quick play request matched with given friendID"
+                }
+                data2 = {
+                    'ID':57,
+                    'UserID':opponent['UserID'],
+                    'FriendID':self._userid,
+                    'Message':"Quick play request matched with given friendID"
+                }
+                rec1 = pickle.dumps(data1)
+                rec2 = pickle.dumps(data2)
+                self.conn.send(rec1)
+                opponent['conn'].send(rec2)
+                print("Opponent messages sent ")
                 self.cancel = True
             elif len(self.message_queue):
                 message = self.message_queue.pop()
