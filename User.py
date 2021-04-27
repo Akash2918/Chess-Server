@@ -528,7 +528,7 @@ class Client(object):
                 data1 = {
                     'ID':56,
                     'UserID':self._userid,
-                    'FriendID':opponent['UserID']
+                    'FriendID':opponent['UserID'],
                     'Message':"Quick play request matched with given friendID"
                 }
                 data2 = {
