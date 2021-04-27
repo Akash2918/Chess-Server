@@ -38,4 +38,8 @@ insert into Clients (UserID, Email, PASSWD, STATUS) values ('Akash2918', 'akash@
 
 insert into Friends (UserID, FriendID, STATUS) values ('Akash2918', 'Hrishikesh', 'Accepted'), ('Akash2918', 'Rutvik123', 'Accepted'), ('Hrishikesh', 'Rutvik123', 'Accepted');
 
+insert into Clients (UserID, Email, PASSWD, STATUS) values ('Test321', 'test321@gmail.com', 'Test@321', 'Verified'), ('Test456', 'test456@gmail.com', 'Test@456', 'Verified'),('Test789', 'test789@gmail.com', 'Test@789', 'Verified');
+
+insert into Friends (UserID, FriendID, STATUS) values ('Akash2918', 'Test456', 'Accepted'), ('Akash2918', 'Test789', 'Accepted'), ('Akash2918', 'Test987', 'Accepted'), ('Akash2918', 'Test654', 'Accepted'), ('Akash2918', 'Test321', 'Accepted'), ('Hrishi1234', 'Test456', 'Accepted'), ('Hrishi1234', 'Test789', 'Accepted'), ('Hrishi1234', 'Test987', 'Accepted'), ('Hrishi1234', 'Test654', 'Accepted'), ('Hrishi1234', 'Test321', 'Accepted'),('Rutvik123', 'Test456', 'Accepted'), ('Rutvik123', 'Test789', 'Accepted'), ('Rutvik123', 'Test987', 'Accepted'), ('Rutvik123', 'Test654', 'Accepted'), ('Rutvik123', 'Test321', 'Accepted') ;
+
 

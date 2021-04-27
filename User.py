@@ -144,6 +144,8 @@ class Client(object):
                         if self.db.remove_friend_from_friendlist(self._userid, friendID):
                             data = {
                                 'ID':28,
+                                'UserID':self._userid,
+                                'FriendID':friendID,
                                 'Message':'Friend deleted from friend list'
                             }
                         else:

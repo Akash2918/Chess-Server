@@ -42,7 +42,7 @@ class Database(object):
         self._existance_roomid_query = ("select RoomID from Games where RoomID = %s")
         self._insert_roomid_todb_query = ("insert into Games (RoomID, Player1, Player2) values (%s, %s, %s)")
         self._insert_to_history_query = ("insert into History (RoomID, currentDate, Move_Logs) values (%s, NOW(), %s)")
-        self._update_win_status_query = ("update Profile set Matches_Played = Matches_Played + 1, Matches_Won = Matches_Won + 1 where UserID = %s")
+        self._update_win_status_query = ("update Profile set Matches_Played = Matches_Played + 1, Matches_Won = Matches_Won + 1, Points = Points + 50 where UserID = %s")
         self._update_lost_status_query = ("update Profile set Matches_Played = Matches_Played + 1 where UserID = %s")
         self._update_friends_accept_query = ("update Friends set STATUS = %s where UserID = %s and FriendID = %s")
         self._existance_friend_query = ("select UserID from Clients where UserID = %s")
