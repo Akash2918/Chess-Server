@@ -16,7 +16,7 @@ DB = Database()
 Users = []
 Rooms = []
 QUICK_PLAY = []
-LOCK = False
+Message_Queue = []
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -81,7 +81,7 @@ def handle_client(conn, data):
                 #print("1: {}".format(len(Users)))
                 loggedin = data['Loggedin']
                 if loggedin:
-                    c = Client(UserID=userid, conn=conn, database=DB, users=Users, rooms=Rooms, quickplay = QUICK_PLAY, lock = LOCK)
+                    c = Client(UserID=userid, conn=conn, database=DB, users=Users, rooms=Rooms, quickplay = QUICK_PLAY, message_queue=Message_Queue)
                     for usr in Users:
                         if usr['UserID'] == userid:
                             Users.remove(usr)

@@ -239,9 +239,12 @@ class Database(object):
         for fid in self.cursor:
             data.append(fid)
         udata = []
-        for u in data[0]:
-            udata.append(u)
-        return udata 
+        if data:
+            for u in data[0]:
+                udata.append(u)
+            return udata
+        else:
+            return data 
 
 # query = ("select * from Clients")
 # custquery = ("CREATE TABLE customers (name VARCHAR(255), address(255))")

@@ -7,7 +7,7 @@ import threading
 import sys
 
 class Client(object):
-    def __init__(self, UserID, conn, database, users, rooms, quickplay, lock):
+    def __init__(self, UserID, conn, database, users, rooms, quickplay, message_queue):
         self._userid = UserID
         self.conn = conn
         self.db = database
@@ -20,7 +20,7 @@ class Client(object):
         self.pieces = None
         self.piece_no = None
         self.quickplay = quickplay
-        self.lock = lock
+        self.message_queue = message_queue
         self.request = False
         self.cancel = False
         self.thread = None
@@ -306,15 +306,19 @@ class Client(object):
                             self.conn.send(srec)
                         # continue
                     elif id == 56:                          ###Quick play message
-                        self.quickplay.append({'UserID':self._userid, 'conn':self.conn})
-                        self.thread = threading.Thread(target=self.get_opponent)
-                        self.thread.start()
-                        while not self.cancel:
-                            if self.request:
-                                self.thread.join()
-                                break
-                            else:
-                                continue
+                        # self.quickplay.append({'UserID':self._userid, 'conn':self.conn})
+                        # self.thread = threading.Thread(target=self.get_opponent)
+                        # self.thread.start()
+                        # while not self.cancel:
+                        #     if self.request:
+                        #         self.thread.join()
+                        #         break
+                        #     else:
+                        #         continue
+                        self.message_queue.append({"UserID":self._userid, 'conn':self.conn})
+                        thread = threading.Thread(target=self.get_connections)
+                        thread.start()
+                        print("Thread started for getting connections")
                     elif id == 58:                  ##Quick play room creating
                         uid = data['UserID']
                         fid = data['FriendID']
@@ -459,54 +463,72 @@ class Client(object):
         
         return set(rooms)
 
-    def get_opponent(self):
-        while self.lock:
-            if self.request:
-                return
-            else:
-                continue
-        self.lock = True
-        self.quickplay.remove({'UserID':self._userid, 'conn': self.conn})
-        self.timeout = False
-        while not timeout:
-            if len(self.quickplay) > 1:
+    # def get_opponent(self):
+    #     print("Inside get_opponent")
+    #     print(self.lock, self._userid)
+    #     # while self.lock:
+    #     #     if self.request:
+    #     #         return
+    #     #     else:
+    #     #         continue
+    #     self.lock = True
+    #     print(self.quickplay)
+    #     self.quickplay.remove({'UserID':self._userid, 'conn': self.conn})
+    #     self.timeout = False
+    #     while not self.timeout:
+    #         if len(self.quickplay) > 1:
+    #             opponent = self.quickplay.pop()
+    #             self.lock = False
+    #             print(self.quickplay)
+    #             opp_uid = opponent['UserID']
+    #             for usr in self.Users:
+    #                 if usr['UserID'] == opp_uid:
+    #                     opp_usr = usr
+    #                     break
+    #             if opp_usr:
+    #                 opp_client = opp_usr['Client']
+    #                 opp_client.request = True
+    #             data = {
+    #                 'ID':56,
+    #                 'FriendID': opp_uid,
+    #                 'UserID': self._userid,
+    #                 'Message': "Quick play request matched with given friendid"
+    #             }
+    #             rev = pickle.dumps(data)
+    #             self.conn.send(rev)
+    #             opp_conn = opponent['conn']
+    #             data = {
+    #                 'ID':57,
+    #                 'FriendID':self._userid,
+    #                 'UserID':opp_uid,
+    #                 'Message':"Quick play request matched with given FriendID wait for 2200"
+    #             }
+    #             rev = pickle.dumps(data)
+    #             opp_conn.send(rev)
+    #         else :
+    #             continue
+    #     # data = {
+    #     #     'ID':400,
+    #     #     'UserID':self._userid,
+    #     #     'Message': 'Opponent not exist'
+    #     # }
+    #     #rev = pickle.dumps(data)
+    #     #self.conn.send(rev)
+    #     self.cancel = True
+    #     #self.quickplay.remove({'UserID':self._userid, 'conn': self.conn})
+    #     self.cancel = True
+    #     return
+
+    def get_connections(self):
+        while not self.cancel:
+            if len(self.quickplay) >=2:
+                player = self.quickplay.pop()
                 opponent = self.quickplay.pop()
-                self.lock = False
-                opp_uid = opponent['UserID']
-                for usr in self.Users:
-                    if usr['UserID'] == opp_uid:
-                        opp_usr = usr
-                        break
-                if opp_usr:
-                    opp_client = opp_usr['Client']
-                    opp_client.request = True
-                data = {
-                    'ID':56,
-                    'FriendID': opp_uid,
-                    'UserID': self._userid,
-                    'Message': "Quick play request matched with given friendid"
-                }
-                rev = pickle.dumps(data)
-                self.conn.send(rev)
-                opp_conn = opponent['conn']
-                data = {
-                    'ID':57,
-                    'FriendID':self._userid,
-                    'UserID':opp_uid,
-                    'Message':"Quick play request matched with given FriendID wait for 2200"
-                }
-                rev = pickle.dumps(data)
-                opp_conn.send(rev)
-            else :
-                continue
-        # data = {
-        #     'ID':400,
-        #     'UserID':self._userid,
-        #     'Message': 'Opponent not exist'
-        # }
-        #rev = pickle.dumps(data)
-        #self.conn.send(rev)
-        self.cancel = True
-        self.quickplay.remove({'UserID':self._userid, 'conn': self.conn})
-        self.cancel = True
+                print("Player {} and opponent = {}".format(player, opponent))
+                self.cancel = True
+            elif len(self.message_queue):
+                message = self.message_queue.pop()
+                self.quickplay.append(message)
+                print("New request recieved")
+            
         return

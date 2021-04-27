@@ -24,7 +24,7 @@ class Room(object):
         self.move = None
         self.white = None
         self.black = None
-        self.fdata = open('./Rooms/{}.csv'.format(self.RoomID), 'w+')
+        #self.fdata = open('./Rooms/{}.csv'.format(self.RoomID), 'w+')
         #self.set_turns()
         
 
@@ -73,11 +73,13 @@ class Room(object):
         return
     
     def write_to_file(self, moveno, uid, start, stop):
-        self.fdata.write('{}\t{}\t{}\t{}\n'.format(moveno, uid, start, stop))
+        with open('./Rooms/{}.csv'.format(self.RoomID), 'w') as fdata:
+            fdata.write('{}\t{}\t{}\t{}\n'.format(moveno, uid, start, stop))
         return
 
     def read_from_file(self,):
-        data = self.fdata.read()
+        with open("./Rooms/{}.csv".format) as fdata:
+            data = fdata.read()
         return data
 
     def broadcast_messages(self):
