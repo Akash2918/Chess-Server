@@ -35,7 +35,7 @@ class Database(object):
         self._add_new_friend_request_query = ("insert into Friends (UserID, FriendID, STATUS) values (%s, %s, %s)")
         self._get_user_profile_query = ("select * from Profile where UserID = %s")
         self._get_friends_rejected_list_query = ("select FriendID from Friends where UserID = %s and STATUS = 'Rejected'")
-        self._get_friends_request_list_query = ("select UserID from Friends where UserID = %s and STATUS = 'Requested'")
+        self._get_friends_request_list_query = ("select UserID from Friends where FriendID = %s and STATUS = 'Pending'")
         self._update_profile_query = ("update Profile set Profile_Image = %s where UserID = %s")
         self._update_password_query = ("update Clients set PASSWD = %s where UserID = %s")
         self._existance_email_query = ("select * from Clients where Email = %s")
@@ -170,7 +170,7 @@ class Database(object):
         
     def insert_History_details(self, roomid, move_log):
         try:
-            self.cursor.execute(self._insert_to_history_query, (roomid, movelog, ))
+            self.cursor.execute(self._insert_to_history_query, (roomid, move_log, ))
             mydb.commit()
             return True
         except:
@@ -216,7 +216,7 @@ class Database(object):
         self.cursor.execute(self._get_friends_request_list_query, (uid, ))
         friends = []
         for friend in self.cursor:
-            friends.append(friend)
+            friends.append(friend[0])
         return friends
         # except:
         #     print("Error occured while processing friend request query")
@@ -235,7 +235,7 @@ class Database(object):
         self.cursor.execute(self._get_friends_rejected_list_query, (uid, ))
         friends = []
         for friend in self.cursor:
-            friends.append(friend)
+            friends.append(friend[0])
         # print("The friends list is {}".format(friends))
         return friends
 

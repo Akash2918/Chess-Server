@@ -24,10 +24,26 @@ class Room(object):
         self.move = None
         self.white = None
         self.black = None
-        #self.fdata = open('./Rooms/{}.csv'.format(self.RoomID), 'w+')
-        #self.set_turns()
+        self.lost = None
+        self.win = None
         
+        
+    def update_database(self):
+        self.move_log = self.read_move_log()
+        self.db.insert_History_details(self.RoomID, self.move_log)
+        self.db.update_lost_status(self.lost)
+        self.db.update_win_status(self.win)
+        
+        print("Data added to the database successfully")
 
+
+        return 
+
+    def read_move_log(self):
+        with open('{}.csv'.format(self.RoomID), 'rb') as fdata:
+            data = fdata.read()
+        
+        return data
 
     def set_turns(self):
         num = random.randint(1, 100)
@@ -92,7 +108,13 @@ class Room(object):
                 message = self.board_messages.pop()
                 print(message)
                 uid = message['UserID']
-                self.game_end = message['Checkmate']
+                if message['Checkmate'] or message['Stalemate'] or message['Forfait'] or message['Left']:
+                    self.lost = uid
+                    if uid == self.User1:
+                        self.win = self.User2
+                    else:
+                        self.win  = self.User1
+                    self.game_end = True
                 if message['ID'] == 60:
                     moveno = message['MoveNo']
                     start = message['Start']
@@ -107,10 +129,11 @@ class Room(object):
                     else:
                         conn = user['conn']
                         conn.send(data)
-                        print("Message sent to uid {}".format(user['UserID']))
-                print("Message with {} uid sent to all users".format(uid))
+                        #print("Message sent to uid {}".format(user['UserID']))
+                #print("Message with {} uid sent to all users".format(uid))
             else:
                 continue
+        self.update_database()
         print("All messages sent")
         return
 
