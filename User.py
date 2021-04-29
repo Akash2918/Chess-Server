@@ -220,9 +220,16 @@ class Client(object):
 
                     elif id == 40:              ## Get user profile
                         profile = self.db.get_profile(self._userid)
+                        email = self.db.get_emailid(self._userid)[0]
                         res = {
                             'ID': 40,
-                            'Profile': profile,
+                            #'Profile': profile,
+                            'UserID':profile[0][0],
+                            'Matches_Played':profile[0][2],
+                            'Matches_Won':profile[0][3],
+                            'Matches_Lost':profile[0][2] - profile[0][3],
+                            'Points':profile[0][4],
+                            'Email':email,
                             'Message': 'User Profile'
                         }
                         res = pickle.dumps(res)
@@ -320,6 +327,7 @@ class Client(object):
                         #     else:
                         #         continue
                         self.message_queue.append({"UserID":self._userid, 'conn':self.conn})
+                        self.cancel = False
                         self.thread = threading.Thread(target=self.get_connections)
                         self.thread.start()
                         print("Thread started for getting connections")

@@ -42,13 +42,14 @@ class Database(object):
         self._existance_roomid_query = ("select RoomID from Games where RoomID = %s")
         self._insert_roomid_todb_query = ("insert into Games (RoomID, Player1, Player2) values (%s, %s, %s)")
         self._insert_to_history_query = ("insert into History (RoomID, currentDate, Move_Logs) values (%s, NOW(), %s)")
-        self._update_win_status_query = ("update Profile set Matches_Played = Matches_Played + 1, Matches_Won = Matches_Won + 1, Points = Points + 50 where UserID = %s")
+        self._update_win_status_query = ("update Profile set Matches_Played = Matches_Played + 1, Matches_Won = Matches_Won + 1, Points = Points + 100 where UserID = %s")
         self._update_lost_status_query = ("update Profile set Matches_Played = Matches_Played + 1 where UserID = %s")
         self._update_friends_accept_query = ("update Friends set STATUS = %s where UserID = %s and FriendID = %s")
         self._existance_friend_query = ("select UserID from Clients where UserID = %s")
         self._existance_of_friend_query = ("select * from Friends where UserID = %s and FriendID = %s")          
         self._delete_friend_query = ("delete from Friends where UserID = %s and FriendID = %s")
         self._get_email_of_client = ("select Email from Clients where UserID = %s")
+        self._create_user_profile_query = ("insert into Profile (UserID, Matches_Played, Matches_Won, Points) values (%s, 0, 0, 0)")
 
     def update_user_profile(self, uid, data):
         try:
@@ -93,6 +94,7 @@ class Database(object):
         try:
             self.cursor.execute(self._update_win_status_query, (uid, ))
             mydb.commit()
+            print("Database updated")
             return True
         except:
             print("Error while updating win status")
@@ -192,6 +194,7 @@ class Database(object):
             data.append(email)
         if len(data) == 0:
             self.cursor.execute(self._add_new_user_query, (UserID, Email, Password, "NOT Verified", ))
+            self.cursor.execute(self._create_user_profile_query, (UserID, ))
             mydb.commit()
             return True
         else:
