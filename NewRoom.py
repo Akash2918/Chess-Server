@@ -108,14 +108,14 @@ class Room(object):
                 message = self.board_messages.pop()
                 print(message)
                 uid = message['UserID']
-                if message['Checkmate'] or message['Stalemate'] or message['Forfait'] or message['Left']:
-                    self.lost = uid
-                    if uid == self.User1:
-                        self.win = self.User2
-                    else:
-                        self.win  = self.User1
-                    self.game_end = True
                 if message['ID'] == 60:
+                    if message['Checkmate'] or message['Stalemate'] or message['Forfeit'] or message['Left']:
+                        self.lost = uid
+                        if uid == self.User1:
+                            self.win = self.User2
+                        else:
+                            self.win  = self.User1
+                        self.game_end = True
                     moveno = message['MoveNo']
                     start = message['Start']
                     stop = message['Stop']
