@@ -29,7 +29,7 @@ class Room(object):
         
         
     def update_database(self):
-        self.move_log = self.read_move_log()
+        #self.move_log = self.read_move_log()
         self.db.insert_History_details(self.RoomID, self.move_log)
         self.db.update_lost_status(self.lost)
         self.db.update_win_status(self.win)

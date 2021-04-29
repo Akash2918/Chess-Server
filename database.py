@@ -50,6 +50,7 @@ class Database(object):
         self._delete_friend_query = ("delete from Friends where UserID = %s and FriendID = %s")
         self._get_email_of_client = ("select Email from Clients where UserID = %s")
         self._create_user_profile_query = ("insert into Profile (UserID, Matches_Played, Matches_Won, Points) values (%s, 0, 0, 0)")
+        self._insert_into_games_query = ("insert into Games (RoomID, Player1, Player2) values (%s, %s, %s)")
 
     def update_user_profile(self, uid, data):
         try:
@@ -69,6 +70,15 @@ class Database(object):
             return data
         except:
             return []
+
+    def insert_new_game_info(self, roomid, user1, user2):
+        try:
+            self.cursor.execute(self._insert_into_games_query, (roomid, user1, user2, ))
+            print("Game updated")
+            return True
+        except:
+            return False
+
 
     def remove_friend_from_friendlist(self, uid, fid):
         data = []

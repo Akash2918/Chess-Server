@@ -25,6 +25,7 @@ class Room(object):
         self.board_thread.start()
 
     def update_database(self):
+        self.db.insert_new_game_info(self.RoomID, self.User1, self.User2)
         self.db.insert_History_details(self.RoomID, self.move_log)
         self.db.update_lost_status(self.lost)
         self.db.update_win_status(self.win)

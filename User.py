@@ -576,7 +576,7 @@ class Client(object):
                 self.conn.send(rec1)
                 opponent['conn'].send(rec2)
                 print("Opponent messages sent ")
-                self.cancel = True
+                self.cancel = False
             elif len(self.message_queue):
                 message = self.message_queue.pop()
                 self.quickplay.append(message)
