@@ -28,22 +28,22 @@ class Room(object):
         self.win = None
         
         
-    def update_database(self):
-        #self.move_log = self.read_move_log()
+    def update_database(self, message):
+        self.move_log = b'000000'#self.read_move_log()
         self.db.insert_History_details(self.RoomID, self.move_log)
-        self.db.update_lost_status(self.lost)
-        self.db.update_win_status(self.win)
-        
+        self.db.update_lost_user_points(self.lost, message)
+        #self.db.update_lost_status(self.lost)
+
         print("Data added to the database successfully")
 
 
         return 
 
     def read_move_log(self):
-        with open('{}.csv'.format(self.RoomID), 'rb') as fdata:
-            data = fdata.read()
+        with open('./Rooms/{}.csv'.format(self.RoomID), 'rb') as fdata:
+            rdata = fdata.read()
         
-        return data
+        return rdata
 
     def set_turns(self):
         num = random.randint(1, 100)
@@ -133,7 +133,7 @@ class Room(object):
                 #print("Message with {} uid sent to all users".format(uid))
             else:
                 continue
-        self.update_database()
+        self.update_database(message)
         print("All messages sent")
         return
 

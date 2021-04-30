@@ -43,7 +43,7 @@ class Database(object):
         self._insert_roomid_todb_query = ("insert into Games (RoomID, Player1, Player2) values (%s, %s, %s)")
         self._insert_to_history_query = ("insert into History (RoomID, currentDate, Move_Logs) values (%s, NOW(), %s)")
         self._update_win_status_query = ("update Profile set Matches_Played = Matches_Played + 1, Matches_Won = Matches_Won + 1, Points = Points + 100 where UserID = %s")
-        self._update_lost_status_query = ("update Profile set Matches_Played = Matches_Played + 1 where UserID = %s")
+        self._update_lost_status_query = ("update Profile set Matches_Played = Matches_Played + 1, Points = Points - 20, where UserID = %s")
         self._update_friends_accept_query = ("update Friends set STATUS = %s where UserID = %s and FriendID = %s")
         self._existance_friend_query = ("select UserID from Clients where UserID = %s")
         self._existance_of_friend_query = ("select * from Friends where UserID = %s and FriendID = %s")          
@@ -51,6 +51,10 @@ class Database(object):
         self._get_email_of_client = ("select Email from Clients where UserID = %s")
         self._create_user_profile_query = ("insert into Profile (UserID, Matches_Played, Matches_Won, Points) values (%s, 0, 0, 0)")
         self._insert_into_games_query = ("insert into Games (RoomID, Player1, Player2) values (%s, %s, %s)")
+        self._update_left_user_query = ("update Profile set Matches_Played = Matches_Played + 1, Points = Points - 50 where UserID = %s")
+        self._update_forfeit_user_query = ("update Profile set Matches_Played = Matches_Played + 1, Points = Points - 30 where UserID = %s")
+        self._update_lost_user_query = ("update Profile set Matches_Played = Matches_Played + 1, Points = %s where UserID = %s")
+        self._get_points_query = ("select Points from Profile where UserID = %s")
 
     def update_user_profile(self, uid, data):
         try:
@@ -74,6 +78,7 @@ class Database(object):
     def insert_new_game_info(self, roomid, user1, user2):
         try:
             self.cursor.execute(self._insert_into_games_query, (roomid, user1, user2, ))
+            mydb.commit()
             print("Game updated")
             return True
         except:
@@ -109,6 +114,28 @@ class Database(object):
         except:
             print("Error while updating win status")
             return False
+
+    def update_lost_user_points(self, uid, message):
+        self.cursor.execute(self._get_points_query, (uid, ))
+        points = []
+        for p in self.cursor:
+            points.append(p)
+        points = points[0][0]
+        if message['Checkmate']:
+            points = points - 20
+        elif message['Stalemate']:
+            points = points - 40
+        elif message['Left']:
+            points = points - 50
+        elif message['Forfeit']:
+            points = points - 30
+        
+        if points < 0:
+            points = 0
+            
+        self.cursor.execute(self._update_lost_user_query, (points, uid, ))
+        mydb.commit()
+        #print(points)
 
     def add_friends_request_status(self, data):
         uid = data['UserID']
